@@ -10,7 +10,7 @@
 - Margaret O’Brien (Archival Liaison)
 - Jason McDermott (Technical Liaison)
 
-## Project summary
+## Project Summary
 
 https://lternet.edu/current-working-groups/
 
@@ -18,6 +18,6 @@ https://lternet.edu/current-working-groups/
 
 https://www.nceas.ucsb.edu/projects/12815
 
-## Project Github repository
+## Project Github Repository
 
 https://github.com/lter/lterwg-emergent
