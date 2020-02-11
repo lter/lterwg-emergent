@@ -18,3 +18,6 @@ https://lternet.edu/current-working-groups/
 
 https://www.nceas.ucsb.edu/projects/12815
 
+## Project Github repository
+
+https://github.com/lter/lterwg-emergent
