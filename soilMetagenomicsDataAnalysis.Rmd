@@ -1,0 +1,208 @@
+---
+title: "Soil Discrete Data Summary Generator"
+author: "Lee Stanish"
+date: "March 20, 2020"
+output: 
+    html_document:
+        toc: true
+        toc_float : true
+        keep_md: true
+---
+
+
+```{r 'load libraries', warning=FALSE, message=FALSE}
+options(stringsAsFactors = FALSE)
+
+library(devtools)
+library(plyr)
+library(dplyr)
+library(qdap)
+library(stringr)
+library(xtable)
+library(ggplot2)
+library(plotly)
+library(neonUtilities)
+# install neonNtrans if needed
+#install_github("NEONScience/NEON-Nitrogen-Transformations/neonNTrans", dependencies=TRUE)  
+library(neonNTrans)  
+
+```
+
+``` {r 'read data from Portal', message=FALSE, results='hide'}
+
+# download soil field data #
+soil_fieldL1 <- loadByProduct(dpID='DP1.10086.001', check.size = FALSE, package = 'expanded', site = 'all')
+soil_fieldBgc <- soil_fieldL1$sls_bgcSubsampling
+# remove unwanted fields
+soil_fieldBgc <- select(soil_fieldBgc, sampleID, cnSampleID, bgcArchiveID,   
+                        bgcSampleCondition=sampleCondition, bgcDataQF)
+soil_fieldCore <- soil_fieldL1$sls_soilCoreCollection
+soil_fieldMoist <- soil_fieldL1$sls_soilMoisture
+soil_fieldPh <- soil_fieldL1$sls_soilpH
+soil_fieldVars <- soil_fieldL1$variables
+
+# join soil field tables: core collection, moisture, pH, bgc sub-sampling
+soilField <- left_join(soil_fieldCore, soil_fieldMoist, by=c('sampleID', 'domainID', 'siteID', 'namedLocation', 'plotID', 'collectDate', 'horizon', 'sampleCode') ) %>%
+    select(-uid.x, -uid.y, -samplingProtocolVersion.y)
+soilField <- left_join(soilField, soil_fieldPh, by=c('sampleID', 'sampleCode', 'domainID', 'siteID',
+                                                     'plotID', 'namedLocation', 'collectDate')) %>%
+  select(-uid, -boatMass, -freshMassBoatMass, -dryMassBoatMass, -pHSoilInWaterMass, -pHWaterVol,
+         -pHSoilInCaClMass, -pHCaClVol, -pHSampleID)
+soilField <- left_join(soilField, soil_fieldBgc, by=c('sampleID') )
+
+
+# download soil chem and isotope data #
+soil_chemL1 <- loadByProduct(dpID='DP1.10078.001', check.size = FALSE,package = 'basic', site = 'all')
+soil_chem <- soil_chemL1$sls_soilChemistry %>%
+  select(sampleID, cnSampleID, sampleType,acidTreatment, nitrogenPercent, organicCPercent,
+         CNratio, cnPercentQF, percentAccuracyQF, analyticalRepNumber, cnRemarks=remarks,
+         cnLaboratoryName=laboratoryName, cnTestMethod=testMethod, cnInstrument=instrument, 
+         cnDataQF=dataQF)
+
+soil_isoL1 <- loadByProduct(dpID='DP1.10100.001', check.size = FALSE,package = 'basic', site = 'all')
+soil_iso <- soil_isoL1$sls_soilStableIsotopes %>%
+  select(sampleID, cnSampleID, d15N, organicd13C, cnIsotopeQF, isotopeAccuracyQF,
+         isoRemarks=remarks, isoLaboratoryName=laboratoryName, isoTestMethod=testMethod, 
+         isoInstrument=instrument, isoAnalyticalRepNumber=analyticalRepNumber,
+         isoDataQF=dataQF)
+
+# N transformation rate measurements
+soil_NtransL1 <- loadByProduct(dpID='DP1.10080.001', check.size = FALSE,package = 'basic', site = 'all')
+soilNtrans <- def.calc.ntrans(kclInt = soil_NtransL1$ntr_internalLab, 
+                       kclIntBlank = soil_NtransL1$ntr_internalLabBlanks, 
+                       kclExt = soil_NtransL1$ntr_externalLab, 
+                       soilMoist = soil_NtransL1$sls_soilMoisture, dropFlagged = TRUE)
+# remove duplicate records
+soilNtransNoDupes <- soilNtrans[!duplicated(soilNtrans$sampleID), ]
+
+
+# join soil chem data tables: soil chem, soil isotopes, N transformation
+soilChem <- left_join(soil_chem, soil_iso, by=c('sampleID', 'cnSampleID'))
+soilChem <- left_join(soilChem, soilNtrans, by=c('sampleID'))
+
+
+# join soil chem and field data tables
+soilFieldChem <- left_join(soilField, soilChem, by=c('sampleID', 'cnSampleID') )
+
+
+# download metagenomics data #
+#soil_mmsL1 <- loadByProduct(dpID='DP1.10107.001', check.size = FALSE,package = 'expanded')
+#soil_mmsRaw <- soil_mmsL1$mms_rawDataFiles
+#soil_mmsSeq <- soil_mmsL1$mms_metagenomeSequencing
+#soil_mmsVars <- soil_mmsL1$variables
+
+# join metagenomics tables
+# remove duplicate dnaSampleID's from raw sequencing table
+#soil_mmsRawNoDupes <- soil_mmsRaw[!duplicated(soil_mmsRaw$dnaSampleID), ]
+#mmsDat <- left_join(soil_mmsRawNoDupes, soil_mmsSeq, by=c('dnaSampleID', 'domainID', 'siteID', #'namedLocation', 'laboratoryName', 'sequencingFacilityID') ) %>% 
+#  select(-uid.x, -uid.y) %>% 
+#  rename(internalLabIDraw=internalLabID.x, internalLabIDseq=internalLabID.y)
+
+
+## NOTE: To JOIN METAGENOMICS DATA REQUIRES EITHER EXPANDING THE MMS DATA OR AVERAGING THE SOIL FIELD
+# DATA. SOIL FIELD DATA ARE AT THE SUBPLOT LEVEL, METAGENOMICS DATA ARE AT THE PLOT LEVEL ##
+
+```
+
+
+### Site-level ranges in soil moisture
+
+```{r plot soil moisture, warning=FALSE, message=FALSE, results = 'asis', echo = FALSE}
+
+g <- ggplot(data=subset(soilFieldChem, !is.na(soilMoisture)), aes(x=siteID, y=soilMoisture) ) +
+    geom_boxplot() +
+  theme(axis.text.x= element_text(angle=45))
+ggplotly(g)
+
+
+```
+
+### Site-level ranges in soil temp
+
+```{r plot soil temp, warning=FALSE, message=FALSE, results = 'asis', echo = FALSE}
+
+g <- ggplot(data=subset(soilFieldChem, !is.na(soilTemp)), aes(x=siteID, y=soilTemp) ) +
+    geom_boxplot() +
+  ylim(c(-15, 50)) +
+  theme(axis.text.x= element_text(angle=45))
+ggplotly(g)
+
+```
+
+
+### Forested sites only
+```{r 'plot forested sites', warning=FALSE, results='asis', echo = FALSE}
+
+forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
+#unique(forGrass$siteID)
+g1 <- ggplot(forest, aes(x=siteID, y=soilTemp)) + 
+  geom_boxplot() + 
+  ylim(c(-20, 50)) +
+  theme(axis.text.x = element_text(angle=45) ) +
+  ggtitle('Forested Plots')
+ggplotly(g1)
+
+g2 <- ggplot(forest, aes(x=siteID, y=soilMoisture)) + 
+  geom_boxplot() + 
+  ylim(c(-1, 15)) +
+  theme(axis.text.x = element_text(angle=45)) +
+    ggtitle('Forested Plots')
+ggplotly(g2)
+
+```
+
+### Grassland sites only
+```{r 'plot grassland sites', warning=FALSE, results='asis', echo = FALSE}
+
+grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
+#unique(forGrass$siteID)
+g1 <- ggplot(grass, aes(x=siteID, y=soilTemp)) + 
+  geom_boxplot() + 
+  ylim(c(-20, 50)) +
+  theme(axis.text.x = element_text(angle=45)) +
+      ggtitle('Grassland Plots')
+ggplotly(g1)
+
+g2 <- ggplot(grass, aes(x=siteID, y=soilMoisture)) + 
+  geom_boxplot() + 
+  ylim(c(-1, 5)) +
+  theme(axis.text.x = element_text(angle=45)) +
+        ggtitle('Grassland Plots')
+ggplotly(g2)
+
+```
+
+
+### Site-level summary table of discrete temp, moisture, and pH data. Not rendering nicely...
+```{r 'site level summary tables', warning=FALSE, message=FALSE}
+
+#### moisture ####
+hasMoisture <- !is.na(soilField$soilMoisture)
+
+moistureSummary <- data.frame(soilField[hasMoisture, ] %>% group_by(siteID) %>% 
+  summarise(meansoilMoisture=mean(soilMoisture)) )
+
+dat <- xtable(moistureSummary)
+print(dat, type = "html")
+
+
+#### temp ####
+hasTemp <- !is.na(soilField$soilTemp)
+
+tempSummary <- data.frame(soilField[hasTemp, ] %>% group_by(siteID) %>% 
+  summarise(meansoilTemp=mean(soilTemp)) )
+
+dat <- xtable(moistureSummary)
+print(dat, type = "html")
+
+
+#### pH ####
+haspH <- !is.na(soilField$soilInCaClpH)
+
+pHSummary <- data.frame(soilField[haspH, ] %>% group_by(siteID) %>% 
+  summarise(meansoilpH=mean(soilInCaClpH)) )
+
+dat <- xtable(pHSummary)
+print(dat, type = "html")
+
+```
