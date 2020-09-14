@@ -25,7 +25,7 @@ https://github.com/lter/lterwg-emergent
 
 ## Road map to this Repository (update this section as needed)
 
-*code* folder: for sharing scripts
+**code** folder: for sharing scripts
 
 ## Guidelines for sharing scripts
 
@@ -44,7 +44,7 @@ Here is an example header code snippet:
 
 #' @return Describe what it returns. Ex. NEON Soil Physical Properties downloaded as .csv file and pdf plots of soil edaphic data by site
 
-# changelog and author contributions / copyrights
-#   Lee Stanish (20XX-MM-DD)
-#     original creation
+#' changelog and author contributions / copyrights
+#'   Lee Stanish (20XX-MM-DD)
+#'     original creation
 ##############################################################################################
