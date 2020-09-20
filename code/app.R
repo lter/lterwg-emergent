@@ -8,7 +8,7 @@ library(shiny)
 #Looping through the folder to load each csv file separately.
 #Still WIP
 neonFiles <- list.files(path = "./NeonFiles/", pattern = "*.csv")
-#myfiles <- lapply(neonFiles, read.delim)
+myfiles <- lapply(neonFiles, read.delim)
 
 #bcl <- read.csv("bcl-data.csv", stringsAsFactors = FALSE)
 ui <- fluidPage()
