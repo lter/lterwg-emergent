@@ -17,7 +17,13 @@ dat<-lapply(neonFiles,read.csv)
 #Next step
 #Now need to add option to choose which file to look at.
 ui <- fluidPage(
-  titlePanel("NEON Shiny App")
+  titlePanel("NEON Shiny App"),
+  sidebarLayout(
+    sidebarPanel(selectInput("fileInput", "Choose the File Number you want to look at",
+                             choices = neonFiles)
+    ),
+    mainPanel("the results will go here")
+  )
 )
 server <- function(input, output) {}
 shinyApp(ui =ui, server = server)
