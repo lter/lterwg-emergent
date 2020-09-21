@@ -14,15 +14,29 @@ library(readr)
 neonFiles <- list.files(pattern = "*.csv")
 dat<-lapply(neonFiles,read.csv)
 
-#Next step
-#Now need to add option to choose which file to look at.
+#Need to join the categorial codes and validation files into one big dataframe each
+categoricalcodes <- data.frame(dat[1])
+for(k in 2:20) {
+  categoricalcodes <- rbind(categoricalcodes, data.frame(dat[k]))
+}
+validation <- data.frame(dat[21])
+for(k in 21:40) {
+  validation <- rbind(validation, data.frame(dat[k]))
+}
+
+#Next step: get table to show up
 ui <- fluidPage(
   titlePanel("NEON Shiny App"),
   sidebarLayout(
-    sidebarPanel(selectInput("fileInput", "Choose the File Number you want to look at",
-                             choices = neonFiles)
+    sidebarPanel(
+      selectInput("fileInput", "Choose the File you want to look at",
+                             choices = c("categoricalcodes", "validation"),
+                             selected = "categoricalcodes"
+      )
     ),
-    mainPanel("the results will go here")
+    mainPanel("The results will go here", 
+              tableOutput("results")
+    )
   )
 )
 server <- function(input, output) {}
