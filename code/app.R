@@ -35,9 +35,19 @@ ui <- fluidPage(
       )
     ),
     mainPanel("The results will go here", 
-              tableOutput("output")
+              tableOutput("results")
     )
   )
 )
-server <- function(input, output) {}
+
+# error is here, trying to make an output table
+server <- function(input, output) {
+  output$results <- renderTable({
+    filtered <-
+      validation %>%
+      filter(file == input$fileInput[1]
+      )
+    filter()
+  })
+}
 shinyApp(ui =ui, server = server)
