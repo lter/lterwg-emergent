@@ -35,7 +35,7 @@ ui <- fluidPage(
       )
     ),
     mainPanel("The results will go here", 
-              tableOutput("results")
+              tableOutput("output")
     )
   )
 )
