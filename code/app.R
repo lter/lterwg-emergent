@@ -3,9 +3,11 @@
 #First loading in the shiny, dplyr, readr libraries.
 #The shiny library is used because this is a shiny app.
 #The dplyr and readr libraries are used to help read in the data. 
+#The DT library is used for the datatables
 library(shiny)
 library(dplyr)
 library(readr)
+library(DT)
 
 #Note: The files are loaded onto the local machine. The folder should be on GitHub and it's name is NeonFiles.
 #Make sure to set the working directory as the GitHub "NeonFiles" folder.
@@ -24,30 +26,41 @@ for(k in 21:40) {
   validation <- rbind(validation, data.frame(dat[k]))
 }
 
-#Next step: get table to show up
+
 ui <- fluidPage(
-  titlePanel("NEON Shiny App"),
+  title = "NEON Shiny App",
   sidebarLayout(
     sidebarPanel(
-      selectInput("fileInput", "Choose the File you want to look at",
-                             choices = c("categoricalcodes", "validation"),
-                             selected = "categoricalcodes"
+      conditionalPanel(
+        'input.dataset === "categoricalCodes"',
+        helpText("Click the tab that you want to look at.")
+      ),
+      conditionalPanel(
+        'input.dataset === "validation"',
+        helpText("Click the tab that you want to look at.")
       )
     ),
-    mainPanel("The results will go here", 
-              tableOutput("results")
+    mainPanel(
+      tabsetPanel(
+        id = 'dataset',
+        tabPanel("categoricalCodes", DT::dataTableOutput("mytable1")),
+        tabPanel("validation", DT::dataTableOutput("mytable2"))
+      )
     )
   )
 )
 
-# error is here, trying to make an output table
 server <- function(input, output) {
-  output$results <- renderTable({
-    filtered <-
-      validation %>%
-      filter(file == input$fileInput[1]
-      )
-    filter()
+  
+  # sorted columns are colored now because CSS are attached to them
+  output$mytable1 <- DT::renderDataTable({
+    DT::datatable(categoricalcodes, options = list(orderClasses = TRUE))
   })
+  
+  # customize the length drop-down menu; display 5 rows per page by default
+  output$mytable2 <- DT::renderDataTable({
+    DT::datatable(validation, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  })
+  
 }
-shinyApp(ui =ui, server = server)
+shinyApp(ui = ui, server = server)
