@@ -60,7 +60,7 @@ server <- function(input, output) {
         filter(variable1 == input$pubCode)    
       
     }) 
-    DT::datatable(categoricalcodes, options = list(orderClasses = TRUE))
+    DT::datatable(categoricalcodes, filter='top', options = list(orderClasses = TRUE))
   })
   
   # customize the length drop-down menu; display 5 rows per page by default
