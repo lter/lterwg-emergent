@@ -12,6 +12,7 @@ library(DT)
 #Note: The files are loaded onto the local machine. The folder should be on GitHub and it's name is NeonFiles.
 #Make sure to set the working directory as the GitHub "NeonFiles" folder.
 #This can be done by clicking Session --> Set Working Directory --> Choose Directory. Then navigate to this directory.
+
 #Loading in the csv files
 neonFiles <- list.files(pattern = "*.csv")
 dat<-lapply(neonFiles,read.csv)
@@ -22,7 +23,7 @@ for(k in 2:20) {
   categoricalcodes <- rbind(categoricalcodes, data.frame(dat[k]))
 }
 validation <- data.frame(dat[21])
-for(k in 21:40) {
+for(k in 22:40) {
   validation <- rbind(validation, data.frame(dat[k]))
 }
 
