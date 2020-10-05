@@ -17,13 +17,19 @@ library(DT)
 neonFiles <- list.files(pattern = "*.csv")
 dat<-lapply(neonFiles,read.csv)
 
+#adding all of theHARVARD soil files
+#each file has a different number of columns so they will be separated for now
+harvard1 <-  data.frame(dat[1])
+harvard2 <-  data.frame(dat[2])
+harvard3 <-  data.frame(dat[3])
+
 #Need to join the categorial codes and validation files into one big dataframe each
-categoricalcodes <- data.frame(dat[1])
-for(k in 2:20) {
+categoricalcodes <- data.frame(dat[4])
+for(k in 5:23) {
   categoricalcodes <- rbind(categoricalcodes, data.frame(dat[k]))
 }
-validation <- data.frame(dat[21])
-for(k in 22:40) {
+validation <- data.frame(dat[24])
+for(k in 25:44) {
   validation <- rbind(validation, data.frame(dat[k]))
 }
 
@@ -33,6 +39,18 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput(inputId = "pubCode", "Select pubcode", choices=c("All", sort(unique("pubCode")))),
+      conditionalPanel(
+        'input.dataset === "harvard1"',
+        helpText("Click the tab that you want to look at.")
+      ),
+      conditionalPanel(
+        'input.dataset === "harvard2"',
+        helpText("Click the tab that you want to look at.")
+      ),
+      conditionalPanel(
+        'input.dataset === "harvard3"',
+        helpText("Click the tab that you want to look at.")
+      ),
       conditionalPanel(
         'input.dataset === "categoricalCodes"',
         helpText("Click the tab that you want to look at.")
@@ -45,8 +63,11 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(
         id = 'dataset',
-        tabPanel("categoricalCodes", DT::dataTableOutput("mytable1")),
-        tabPanel("validation", DT::dataTableOutput("mytable2"))
+        tabPanel("harvard1", DT::dataTableOutput("mytable1")),
+        tabPanel("harvard2", DT::dataTableOutput("mytable2")),
+        tabPanel("harvard3", DT::dataTableOutput("mytable3")),
+        tabPanel("categoricalCodes", DT::dataTableOutput("mytable4")),
+        tabPanel("validation", DT::dataTableOutput("mytable5"))
       )
     )
   )
@@ -61,11 +82,38 @@ server <- function(input, output) {
         filter(variable1 == input$pubCode)    
       
     }) 
+    DT::datatable(harvard1, filter='top', options = list(orderClasses = TRUE))
+  })
+  
+  output$mytable2 <- DT::renderDataTable({
+    reactive_data <- reactive({
+      categoricalcodes %>%
+        filter(variable1 == input$pubCode)    
+      
+    }) 
+    DT::datatable(harvard2, filter='top', options = list(orderClasses = TRUE))
+  })
+  
+  output$mytable3 <- DT::renderDataTable({
+    reactive_data <- reactive({
+      categoricalcodes %>%
+        filter(variable1 == input$pubCode)    
+      
+    }) 
+    DT::datatable(harvard3, filter='top', options = list(orderClasses = TRUE))
+  })
+  
+  output$mytable4 <- DT::renderDataTable({
+    reactive_data <- reactive({
+      categoricalcodes %>%
+        filter(variable1 == input$pubCode)    
+      
+    }) 
     DT::datatable(categoricalcodes, filter='top', options = list(orderClasses = TRUE))
   })
   
   # customize the length drop-down menu; display 5 rows per page by default
-  output$mytable2 <- DT::renderDataTable({
+  output$mytable5 <- DT::renderDataTable({
     DT::datatable(validation, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
   })
   
