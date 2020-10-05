@@ -1,5 +1,5 @@
 #This is the Shiny app for the Neon data
-#Author: Dvir Blander
+#Author: Dvir Blander and Katrina Newcomer
 #First loading in the shiny, dplyr, readr libraries.
 #The shiny library is used because this is a shiny app.
 #The dplyr and readr libraries are used to help read in the data. 
