@@ -112,10 +112,13 @@ server <- function(input, output) {
     DT::datatable(categoricalcodes, filter='top', options = list(orderClasses = TRUE))
   })
   
-  # customize the length drop-down menu; display 5 rows per page by default
   output$mytable5 <- DT::renderDataTable({
-    DT::datatable(validation, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+    reactive_data <- reactive({
+      categoricalcodes %>%
+        filter(variable1 == input$pubCode)    
+      
+    }) 
+    DT::datatable(validation, filter='top', options = list(orderClasses = TRUE))
   })
-  
 }
 shinyApp(ui = ui, server = server)
