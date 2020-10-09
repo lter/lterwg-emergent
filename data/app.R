@@ -27,7 +27,7 @@ ui <- fluidPage(
         id = "my-filters",
         inline = FALSE,
         params = list(
-          siteID1 = list(inputId = "siteID", title = "Select Site ID", choices = c("choose" = "", levels(soilFieldChem$siteID))),
+          siteID = list(inputId = "siteID", title = "Select Site ID", choices = c("choose" = "", levels(soilFieldChem$siteID))),
           nlcdClass = list(inputId = "nlcdClass", title = "Select nlcdClass", choices = c("choose" = "", levels(soilFieldChem$nlcdClass))),
           biophysicalCriteria = list(inputId = "biophysicalCriteria", title = "Select biophysicalCriteria", choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria))),
           sampleTiming = list(inputId = "sampleTiming", title = "Select sampleTiming", choices = c("choose" = "", levels(soilFieldChem$sampleTiming))),
@@ -47,17 +47,18 @@ server <- function(input, output, session) {
   sfctabe <- reactive({ 
     
     soilFieldChem %>% 
-      filter(sfctabe$siteID == input$siteID1) %>% 
-      filter(nlcdClass == input$var2) %>% 
-      filter(biophysicalCriteria == input$var3) %>% 
-      filter(sampleTiming == input$var4) %>% 
-      filter(domainID == input$var5)
+      filter(siteID == 'BART') %>% 
+      filter(nlcdClass == 'mixedForest') %>% 
+      filter(biophysicalCriteria == 'NA') %>% 
+      filter(sampleTiming == 'winterSpringTransition') %>% 
+      filter(domainID == 'D01
+')
     
   })
   
   output$select_siteID <- renderUI({
     
-    selectizeInput('siteID', 'Select variable 1', choices = c("select" = "", levels(sfctabe$site_ID)))
+    selectizeInput('siteID', 'Select variable 1', choices = c("select" = "", levels(sfctabe$siteID)))
     
   })
   
@@ -66,7 +67,7 @@ server <- function(input, output, session) {
     
     choice_var2 <- reactive({
       soilFieldChem %>% 
-        filter(siteID = input$siteID1) %>% 
+        filter(siteID = input$siteID) %>% 
         pull(nlcdClass) %>% 
         as.character()
       
@@ -80,7 +81,7 @@ server <- function(input, output, session) {
     
     choice_var3 <- reactive({
       soilFieldChem %>% 
-        filter(siteID == sfctabe$site_ID) %>% 
+        filter(siteID == sfctabe$siteID) %>% 
         filter(nlcdClass == input$var2) %>% 
         pull(biophysicalCriteria) %>% 
         as.character()
@@ -95,7 +96,7 @@ server <- function(input, output, session) {
     
     choice_var4 <- reactive({
       soilFieldChem %>% 
-        filter(siteID == sfctabe$site_ID) %>% 
+        filter(siteID == sfctabe$siteID) %>% 
         filter(nlcdClass == input$var2) %>% 
         filter(biophysicalCriteria == input$var3) %>% 
         pull(sampleTiming) %>% 
@@ -111,7 +112,7 @@ server <- function(input, output, session) {
     
     choice_var5 <- reactive({
      soilFieldChema %>% 
-        filter(siteID == input$siteID1) %>% 
+        filter(siteID == 'BAR') %>% 
         filter(nlcdClass == input$var2) %>% 
         filter(biophysicalCriteria == input$var3) %>% 
         filter(sampleTiming == input$var4) %>% 
@@ -129,13 +130,11 @@ server <- function(input, output, session) {
     sfctabe()
     
   })
-  
-
-}
+ 
 options = list(height = 500)
 
 
-
+}
 
 shinyApp(ui = ui, server = server)
 
