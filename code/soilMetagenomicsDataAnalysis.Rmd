@@ -23,7 +23,7 @@ library(ggplot2)
 library(plotly)
 library(neonUtilities)
 # install neonNtrans if needed
-#install_github("NEONScience/NEON-Nitrogen-Transformations/neonNTrans", dependencies=TRUE)  
+install_github("NEONScience/NEON-Nitrogen-Transformations/neonNTrans", dependencies=TRUE)  
 library(neonNTrans)  
 
 ```
