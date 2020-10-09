@@ -17,45 +17,124 @@ library(shinyWidgets)
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 
 
-shinyApp(
-  ui = pageWithSidebar(
-    headerPanel("Painting 8"),
+
+
+ui <- fluidPage(
+  title = "NEON Shiny App",
+  sidebarLayout(
     sidebarPanel(
       selectizeGroupUI(
         id = "my-filters",
         inline = FALSE,
         params = list(
-          siteID = list(inputId = "siteID", title = "Select variable 1", placeholder = 'select'),
-          nlcdClass = list(inputId = "nlcdClass", title = "Select variable 2", placeholder = 'select'),
-          sampleTiming = list(inputId = "sampleTiming", title = "Select variable 3", placeholder = 'select'),
-          incubationMethod = list(inputId = "incubationMethod", title = "Select variable 4", placeholder = 'select'),
-          domainID = list(inputId = "domainID", title = "Select variable 5", placeholder = 'select')
+          siteID1 = list(inputId = "siteID", title = "Select Site ID", choices = c("choose" = "", levels(soilFieldChem$siteID))),
+          nlcdClass = list(inputId = "nlcdClass", title = "Select nlcdClass", choices = c("choose" = "", levels(soilFieldChem$nlcdClass))),
+          biophysicalCriteria = list(inputId = "biophysicalCriteria", title = "Select biophysicalCriteria", choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria))),
+          sampleTiming = list(inputId = "sampleTiming", title = "Select sampleTiming", choices = c("choose" = "", levels(soilFieldChem$sampleTiming))),
+          domainID = list(inputId = "domainID", title = "Select domainID", choices = c("choose" = "", levels(soilFieldChem$domainID)))
         )
       )
     ),
     
     mainPanel(
       tableOutput("table")
+      )
     )
-  ),
+  )
+
+
+server <- function(input, output, session) {
+  sfctabe <- reactive({ 
+    
+    soilFieldChem %>% 
+      filter(sfctabe$siteID == input$siteID1) %>% 
+      filter(nlcdClass == input$var2) %>% 
+      filter(biophysicalCriteria == input$var3) %>% 
+      filter(sampleTiming == input$var4) %>% 
+      filter(domainID == input$var5)
+    
+  })
   
-  server = function(input, output, session) {
+  output$select_siteID <- renderUI({
     
-    res_mod <- callModule(
-      module = selectizeGroupServer,
-      id = "my-filters",
-      data = soilFieldChem,
-      vars = c("siteID", "nlcdClass", "sampleTiming", "incubationMethod", "domainID")
-    )
+    selectizeInput('siteID', 'Select variable 1', choices = c("select" = "", levels(sfctabe$site_ID)))
     
-    output$table <- renderTable({
-      res_mod()
+  })
+  
+  output$select_var2 <- renderUI({
+    
+    
+    choice_var2 <- reactive({
+      soilFieldChem %>% 
+        filter(siteID = input$siteID1) %>% 
+        pull(nlcdClass) %>% 
+        as.character()
+      
     })
     
-  },
+    selectizeInput('var2', 'Select variable 2', choices = c("select" = "", sfctabe$choice_var2())) # <- put the reactive element here
+    
+  })
   
-  options = list(height = 500)
-)
+  output$select_var3 <- renderUI({
+    
+    choice_var3 <- reactive({
+      soilFieldChem %>% 
+        filter(siteID == sfctabe$site_ID) %>% 
+        filter(nlcdClass == input$var2) %>% 
+        pull(biophysicalCriteria) %>% 
+        as.character()
+      
+    })
+    
+    selectizeInput('var3', 'Select variable 3', choices = c("select" = "", sfctabe$choice_var3()))
+    
+  })
+  
+  output$select_var4 <- renderUI({
+    
+    choice_var4 <- reactive({
+      soilFieldChem %>% 
+        filter(siteID == sfctabe$site_ID) %>% 
+        filter(nlcdClass == input$var2) %>% 
+        filter(biophysicalCriteria == input$var3) %>% 
+        pull(sampleTiming) %>% 
+        as.character()
+      
+    })
+    
+    selectizeInput('var4', 'Select variable 4', choices = c("select" = "", choice_var4()))
+    
+  })
+  
+  output$select_var5 <- renderUI({
+    
+    choice_var5 <- reactive({
+     soilFieldChema %>% 
+        filter(siteID == input$siteID1) %>% 
+        filter(nlcdClass == input$var2) %>% 
+        filter(biophysicalCriteria == input$var3) %>% 
+        filter(sampleTiming == input$var4) %>% 
+        pull(domainID) %>% 
+        as.character()
+      
+    })  
+    
+    selectizeInput('var5', 'Select variable 5', choices = c("select" = "", choice_var5()))
+    
+  })
+  
+  output$table <- renderTable({ 
+    
+    sfctabe()
+    
+  })
+  
+
+}
+options = list(height = 500)
+
+
 
 
 shinyApp(ui = ui, server = server)
