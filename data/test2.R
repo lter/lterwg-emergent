@@ -5,7 +5,6 @@
 #The dplyr and readr libraries are used to help read in the data. 
 #The DT library is used for the datatables
 library(plotly)
-
 library(ggplot2)
 library(shiny)
 library(dplyr)
@@ -21,45 +20,41 @@ soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
 forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
 
+#boxplotdat <- rbind(soilFieldChem, grass, forest)
 
 ui <- fluidPage(
   selectInput("siteTYPE", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
-  plotOutput("BoxPlot")
+  mainPanel(
+    plotOutput("BoxPlot")
+  )
 )
 
 
 server <- function(input, output, session) {
+  siteData <- soilFieldChem
   siteTypeData <- reactive({
     input$siteTYPE
-  })
-  output$BoxPlot <- renderPlot({
-    if(input$siteTYPE == "Grassland Sites") {
-      g1 <- ggplot(grass, aes(x=siteID, y=soilTemp)) + 
-        geom_boxplot() + 
-        ylim(c(-20, 50)) +
-        theme(axis.text.x = element_text(angle=45)) +
-        ggtitle('Grassland Plots')
-      ggplotly(g1)
+    
+    if (input$siteType == "All  Sites") {
+      siteData <- soilFieldChem
     }
-    else if(input$siteTYPE == "All Sites") {
-      g <- ggplot(data=subset(soilFieldChem, !is.na(soilMoisture)), aes(x=siteID, y=soilMoisture) ) +
-        geom_boxplot() +
-        theme(axis.text.x= element_text(angle=45))
-      ggplotly(g)
-      
+    else if (input$siteType == "Grassland Sites") {
+      siteData <-soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
     }
-    else if(input$siteTYPE == "Forrested Sites") {
-      #unique(forGrass$siteID)
-      g1 <- ggplot(forest, aes(x=siteID, y=soilTemp)) + 
-        geom_boxplot() + 
-        ylim(c(-20, 50)) +
-        theme(axis.text.x = element_text(angle=45) ) +
-        ggtitle('Forested Plots')
-      ggplotly(g1)
+    else if (input$siteType == "Forrested Sites") {
+      siteData <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
     }
   })
-  }
-
-
+  output$BoxPlot <- renderUI({
+    ggplot(siteData, aes(x=siteID, y=soilTemp)) +
+    geom_boxplot() + 
+      ylim(c(-20, 50)) +
+      theme(axis.text.x = element_text(angle=45)) +
+      ggtitle(input$siteType)
+  })
+ 
+  
+  
+} 
 shinyApp(ui = ui, server = server)  
 
