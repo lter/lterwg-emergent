@@ -27,11 +27,11 @@ ui <- fluidPage(
         id = "my-filters",
         inline = FALSE,
         params = list(
-          siteID = list(inputId = "siteID", title = "Select Site ID", choices = c("choose" = "", levels(soilFieldChem$siteID))),
-          nlcdClass = list(inputId = "nlcdClass", title = "Select nlcdClass", choices = c("choose" = "", levels(soilFieldChem$nlcdClass))),
-          biophysicalCriteria = list(inputId = "biophysicalCriteria", title = "Select biophysicalCriteria", choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria))),
-          sampleTiming = list(inputId = "sampleTiming", title = "Select sampleTiming", choices = c("choose" = "", levels(soilFieldChem$sampleTiming))),
-          domainID = list(inputId = "domainID", title = "Select domainID", choices = c("choose" = "", levels(soilFieldChem$domainID)))
+          siteID = list(inputId = "siteID", title = "Select Site ID", choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
+          nlcdClass = list(inputId = "nlcdClass", title = "Select nlcdClass", choices = c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'MI'),
+          biophysicalCriteria = list(inputId = "biophysicalCriteria", title = "Select biophysicalCriteria", choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria)), selected='OK'),
+          sampleTiming = list(inputId = "sampleTiming", title = "Select sampleTiming", choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='dryWetTransition'),
+          soilTemp = list(inputId = "soilTemp", title = "Select soilTemp", choices = c("choose" = "", levels(soilFieldChem$soilTemp)))
         )
       )
     ),
@@ -44,25 +44,24 @@ ui <- fluidPage(
 
 
 server <- function(input, output, session) {
-  sfctabe <- reactive({ 
+  soilFieldChem <- reactive({ 
     
-    soilFieldChem %>% 
+    soilFieldChem <- soilFieldChem %>% 
       filter(siteID == 'BART') %>% 
-      filter(nlcdClass == 'mixedForest') %>% 
-      filter(biophysicalCriteria == 'NA') %>% 
-      filter(sampleTiming == 'winterSpringTransition') %>% 
-      filter(domainID == 'D01
-')
+      filter(nlcdClass == input$nlcdClass) %>% 
+      filter(biophysicalCriteria == input$biophysicalCriteria) %>% 
+      filter(sampleTiming == input$sampleTiming) %>% 
+      filter(soilTemp == input$soilTemp)
     
-  })
+})
   
   output$select_siteID <- renderUI({
     
-    selectizeInput('siteID', 'Select variable 1', choices = c("select" = "", levels(sfctabe$siteID)))
+    selectizeInput('siteID', 'Select variable 1', choices = c("select" = "", levels(soilFieldChem$siteID)), selected = "BART")
     
   })
   
-  output$select_var2 <- renderUI({
+  output$select_nlcdClass <- renderUI({
     
     
     choice_var2 <- reactive({
@@ -73,7 +72,7 @@ server <- function(input, output, session) {
       
     })
     
-    selectizeInput('var2', 'Select variable 2', choices = c("select" = "", sfctabe$choice_var2())) # <- put the reactive element here
+    selectizeInput('var2', 'Select variable 2', choices = c("select" = "", soilFieldChem$nlcdClass)) # <- put the reactive element here
     
   })
   
@@ -81,7 +80,7 @@ server <- function(input, output, session) {
     
     choice_var3 <- reactive({
       soilFieldChem %>% 
-        filter(siteID == sfctabe$siteID) %>% 
+        filter(siteID == 'BART') %>% 
         filter(nlcdClass == input$var2) %>% 
         pull(biophysicalCriteria) %>% 
         as.character()
@@ -111,12 +110,12 @@ server <- function(input, output, session) {
   output$select_var5 <- renderUI({
     
     choice_var5 <- reactive({
-     soilFieldChema %>% 
+     soilFieldChem %>% 
         filter(siteID == 'BAR') %>% 
         filter(nlcdClass == input$var2) %>% 
         filter(biophysicalCriteria == input$var3) %>% 
         filter(sampleTiming == input$var4) %>% 
-        pull(domainID) %>% 
+        pull(soilTemp) %>% 
         as.character()
       
     })  
@@ -125,9 +124,14 @@ server <- function(input, output, session) {
     
   })
   
-  output$table <- renderTable({ 
-    
-    sfctabe()
+  output$table <- renderTable({
+    soilFieldChem <- soilFieldChem %>%
+      filter(siteID == 'BART') %>% 
+      filter(nlcdClass == input$var2) %>% 
+      filter(biophysicalCriteria == input$var3) %>% 
+      filter(sampleTiming == input$var4) %>% 
+      pull(soilTemp) %>% 
+      as.character()
     
   })
  
