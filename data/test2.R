@@ -20,8 +20,6 @@ soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
 forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
 
-#boxplotdat <- rbind(soilFieldChem, grass, forest)
-
 ui <- fluidPage(
   selectInput("siteTYPE", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
   mainPanel(
@@ -31,30 +29,30 @@ ui <- fluidPage(
 
 
 server <- function(input, output, session) {
-  siteData <- soilFieldChem
   siteTypeData <- reactive({
-    input$siteTYPE
-    
-    if (input$siteType == "All  Sites") {
-      siteData <- soilFieldChem
-    }
-    else if (input$siteType == "Grassland Sites") {
-      siteData <-soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
-    }
-    else if (input$siteType == "Forrested Sites") {
-      siteData <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
+    if (!is.null(input$siteType == "All Sites")) {
+      test <- soilFieldChem
+      #print(test)
+      #test
+    } else if (!is.null(input$siteType == "Grassland Sites")) {
+      test <- grass
+      #print(test)
+      #test
+    } else if(!is.null(input$siteType == "Forrested Sites")) {
+      test <- forest
+      #print(test)
+      #test
     }
   })
-  output$BoxPlot <- renderUI({
-    ggplot(siteData, aes(x=siteID, y=soilTemp)) +
-    geom_boxplot() + 
+  
+  output$BoxPlot <- renderPlot({
+    ggplot(siteTypeData(), aes(x=siteID, y=soilTemp)) +
+      geom_boxplot() + 
       ylim(c(-20, 50)) +
       theme(axis.text.x = element_text(angle=45)) +
-      ggtitle(input$siteType)
+      ggtitle("Soil Temp for Each Site ID")
+  
   })
- 
-  
-  
 } 
-shinyApp(ui = ui, server = server)  
 
+shinyApp(ui = ui, server = server)  
