@@ -19,32 +19,54 @@ library(shinyWidgets)
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
 forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
+forestsub <- forest %>% 
+  group_by(siteID, nlcdClass) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
 
+grasssub <- grass %>% 
+  group_by(siteID, nlcdClass) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+
+allsub <- soilFieldChem%>% 
+  group_by(siteID, nlcdClass) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
 ui <- fluidPage(
 
   titlePanel("Neon"),
-  tabPanel("Graph",
-           sidebarPanel(      selectInput("selection", label = h3("Select Type of Site"), 
-                                          choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
-                                          selected = 1),
-                              selectInput("selection3", label = h3("Soil Temp or Moisture"), 
-                                          choices = c("soilTemp", "soilMoisture"),
-                                          selected = 1)
-                              
-                              ),
-           mainPanel(plotOutput("distPlot"))
-  ),
+  sidebarLayout(position = "right",
+    tabPanel("Graph",
+             sidebarPanel(      selectInput("selection", label = h3("Select Type of Site"), 
+                                            choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
+                                            selected = 1),
+                                selectInput("selection3", label = h3("Soil Temp or Moisture"), 
+                                            choices = c("soilTemp", "soilMoisture"),
+                                            selected = 1)
+                                
+             ),
+             mainPanel(plotOutput("distPlot")),
+             mainPanel(plotOutput("distPlot2"))
+
+
+             ),
   tabPanel("Table",
            sidebarPanel(      selectInput("selection1", label = h3("Select nlcdClass"), 
-                                          choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'MI'),
+                                          choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'evergreenForest
+' ),
                               selectInput("selection2", label = h3("Select siteID"), 
                                           choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
                               selectInput("selection4", label = h3("Select biophysicalCriteria"), 
-                                          choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria)) ),
+                                          choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria)), selected = 'OK - no known exceptions'),
                               selectInput("selection5", label = h3("Select sampleTiming"), 
-                                          choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='dryWetTransition')
-           ),
+                                          choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='peakGreenness')
+           ), 
+
            mainPanel(DT::dataTableOutput("table"))
+
+  )
+           
   )
     )
 
@@ -105,6 +127,8 @@ server <- function(input, output) {
     else if (input$selection == "Forrested Sites" ) {
       x    <-  forest
     }
+
+    
     ggplot(x, aes(x=siteID, y= !!sym(input$selection3))) +
       geom_boxplot() + 
       ylim(c(-20, 50)) +
@@ -114,6 +138,29 @@ server <- function(input, output) {
     
  
   }) 
+  output$distPlot2 <- renderPlot ({
+    if (input$selection == "All Sites") {
+      x    <-   soilFieldChem
+    }
+    else if (input$selection == "Grassland Sites" ) {
+      x    <-  grass
+    }
+    else if (input$selection == "Forrested Sites" ) {
+      x    <-  forest
+    }
+    
+    xsub <- x %>% 
+      group_by(siteID, nlcdClass) %>% 
+      summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+                mean_soilTemp = mean(soilTemp, na.rm = TRUE)) 
+    
+    g1 <- ggplot(xsub, aes(x=mean_soilMoisture, y=mean_soilTemp, color = siteID, label = siteID)) + 
+      geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+      xlim(c(0, 4)) +
+      ylim(c(0, 30)) +
+      ggtitle('Soil Moisture x Temperatue Forested Plots')
+    g1 
+  })
 }
 
 
