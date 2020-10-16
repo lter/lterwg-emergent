@@ -53,8 +53,7 @@ ui <- fluidPage(
              ),
   tabPanel("Table",
            sidebarPanel(      selectInput("selection1", label = h3("Select nlcdClass"), 
-                                          choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'evergreenForest
-' ),
+                                          choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'mixedForest' ),
                               selectInput("selection2", label = h3("Select siteID"), 
                                           choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
                               selectInput("selection4", label = h3("Select biophysicalCriteria"), 
