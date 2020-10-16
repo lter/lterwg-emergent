@@ -33,15 +33,15 @@ server <- function(input, output, session) {
     if (!is.null(input$siteType == "All Sites")) {
       test <- soilFieldChem
       #print(test)
-      #test
+      test
     } else if (!is.null(input$siteType == "Grassland Sites")) {
       test <- grass
       #print(test)
-      #test
+      test
     } else if(!is.null(input$siteType == "Forrested Sites")) {
       test <- forest
       #print(test)
-      #test
+      test
     }
   })
   
