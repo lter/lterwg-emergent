@@ -31,20 +31,53 @@ ui <- fluidPage(
     sidebarPanel( 
       
       
-      selectInput("selection", label = h3("Select box"), 
+      selectInput("selection", label = h3("Select Type of Site"), 
                   choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
-                  selected = 1)
+                  selected = 1),
+      selectInput("selection1", label = h3("Select nlcdClass"), 
+                  choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'MI'),
+      selectInput("selection2", label = h3("Select Type of Site"), 
+                choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
     ),
     
    
     mainPanel(
+      tableOutput("table"),
       plotOutput("distPlot")
+      
       
     ))
 )
 
 server <- function(input, output) {
-
+  tab <- reactive({ 
+    
+    soilFieldChem %>% 
+      filter(nlcdClass == input$selection1) %>% 
+      filter(siteID == input$selection2) 
+    
+  })
+  output$table <-renderTable({
+    tab()
+    
+  })
+  output$select_s1 <- renderUI({
+    
+    selectizeInput('s1', 'Select variable 1', choices = c("select" = "", levels(soilFieldChem$selection1)))
+    
+  })
+  
+  output$select_selection2 <- renderUI({
+    
+    
+    choice_selection2 <- reactive({
+      soilFieldChem %>% 
+        filter(selection1 == input$s1) %>% 
+        pull(selection2) %>% 
+        as.character()
+      
+    })
+  })
   output$distPlot <- renderPlot({ 
     if (input$selection == "All Sites") {
       x    <-   soilFieldChem
@@ -66,7 +99,7 @@ server <- function(input, output) {
   }) 
 }
 
-
+options = list(height = 500)
 # Create Shiny app objects from either an explicit UI/server pair 
 shinyApp(ui = ui, server = server)
 
