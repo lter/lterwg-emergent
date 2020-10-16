@@ -23,33 +23,29 @@ forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
 ui <- fluidPage(
 
   titlePanel("Neon"),
-  
-  
-  sidebarLayout( 
-    
-    
-    sidebarPanel( 
-      
-      
-      selectInput("selection", label = h3("Select Type of Site"), 
-                  choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
-                  selected = 1),
-      selectInput("selection1", label = h3("Select nlcdClass"), 
-                  choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'MI'),
-      selectInput("selection2", label = h3("Select Type of Site"), 
-                choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
-    ),
-    
-   
-    mainPanel(
-      tableOutput("table"),
-      plotOutput("distPlot")
-      
-      
-    ))
-)
+  tabPanel("Graph",
+           sidebarPanel(      selectInput("selection", label = h3("Select Type of Site"), 
+                                          choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
+                                          selected = 1),
+                              selectInput("selection3", label = h3("Soil Temp or Moisture"), 
+                                          choices = c("soilTemp", "soilMoisture"),
+                                          selected = 1)
+                              ),
+           mainPanel(plotOutput("distPlot"))
+  ),
+  tabPanel("Table",
+           sidebarPanel(      selectInput("selection1", label = h3("Select nlcdClass"), 
+                                          choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'MI'),
+                              selectInput("selection2", label = h3("Select Type of Site"), 
+                                          choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
+           ),
+           mainPanel(tableOutput("table"))
+  )
+    )
+
 
 server <- function(input, output) {
+
   tab <- reactive({ 
     
     soilFieldChem %>% 
@@ -79,6 +75,7 @@ server <- function(input, output) {
     })
   })
   output$distPlot <- renderPlot({ 
+
     if (input$selection == "All Sites") {
       x    <-   soilFieldChem
     }
@@ -88,11 +85,11 @@ server <- function(input, output) {
     else if (input$selection == "Forrested Sites" ) {
       x    <-  forest
     }
-    ggplot(x, aes(x=siteID, y=soilTemp)) +
+    ggplot(x, aes(x=siteID, y= !!sym(input$selection3))) +
       geom_boxplot() + 
       ylim(c(-20, 50)) +
       theme(axis.text.x = element_text(angle=45)) +
-    ggtitle("Soil Temp for Each Site ID")
+    ggtitle("for Each Site ID")
     
     
  
