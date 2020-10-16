@@ -30,16 +30,21 @@ ui <- fluidPage(
                               selectInput("selection3", label = h3("Soil Temp or Moisture"), 
                                           choices = c("soilTemp", "soilMoisture"),
                                           selected = 1)
+                              
                               ),
            mainPanel(plotOutput("distPlot"))
   ),
   tabPanel("Table",
            sidebarPanel(      selectInput("selection1", label = h3("Select nlcdClass"), 
                                           choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'MI'),
-                              selectInput("selection2", label = h3("Select Type of Site"), 
-                                          choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
+                              selectInput("selection2", label = h3("Select siteID"), 
+                                          choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
+                              selectInput("selection4", label = h3("Select biophysicalCriteria"), 
+                                          choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria)) ),
+                              selectInput("selection5", label = h3("Select sampleTiming"), 
+                                          choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='dryWetTransition')
            ),
-           mainPanel(tableOutput("table"))
+           mainPanel(DT::dataTableOutput("table"))
   )
     )
 
@@ -50,10 +55,12 @@ server <- function(input, output) {
     
     soilFieldChem %>% 
       filter(nlcdClass == input$selection1) %>% 
-      filter(siteID == input$selection2) 
+      filter(siteID == input$selection2) %>%
+      filter(biophysicalCriteria == input$selection4) %>%
+      filter(sampleTiming == input$selection5 )
     
   })
-  output$table <-renderTable({
+  output$table <-DT::renderDataTable({
     tab()
     
   })
@@ -74,6 +81,19 @@ server <- function(input, output) {
       
     })
   })
+  
+    output$selection4 <- renderUI({
+      
+      choice_selection4 <- reactive({
+        soilFieldChem %>% 
+          filter(selection1 == input$s1) %>% 
+          filter(selection2 == input$s2) %>% 
+          pull(selection4) %>% 
+          as.character()
+        
+      })
+  })
+    
   output$distPlot <- renderPlot({ 
 
     if (input$selection == "All Sites") {
@@ -96,7 +116,7 @@ server <- function(input, output) {
   }) 
 }
 
-options = list(height = 500)
+
 # Create Shiny app objects from either an explicit UI/server pair 
 shinyApp(ui = ui, server = server)
 
