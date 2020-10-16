@@ -55,9 +55,13 @@ server <- function(input, output) {
     else if (input$selection == "Forrested Sites" ) {
       x    <-  forest
     }
-  
-    boxplot(x, col = 'darkgray', border = 'white', xlab=input$selection, 
-         main="soil Temp")
+    ggplot(x, aes(x=siteID, y=soilTemp)) +
+      geom_boxplot() + 
+      ylim(c(-20, 50)) +
+      theme(axis.text.x = element_text(angle=45)) +
+    ggtitle("Soil Temp for Each Site ID")
+    
+    
  
   }) 
 }
