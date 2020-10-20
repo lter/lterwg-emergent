@@ -15,24 +15,10 @@ library(shinyWidgets)
 #Make sure to set the working directory as the GitHub "NeonFiles" folder.
 #This can be done by clicking Session --> Set Working Directory --> Choose Directory. Then navigate to this directory.
 
-#Loading in the csv files
+#Loading in the csv files and showing less than 113 columns
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
-grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
-forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
-forestsub <- forest %>% 
-  group_by(siteID, nlcdClass) %>% 
-  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
 
-grasssub <- grass %>% 
-  group_by(siteID, nlcdClass) %>% 
-  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
 
-allsub <- soilFieldChem%>% 
-  group_by(siteID, nlcdClass) %>% 
-  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
 ui <- fluidPage(
   titlePanel("Neon"),
   sidebarLayout(position = "left",
