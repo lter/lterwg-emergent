@@ -20,7 +20,7 @@ soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 
 
 ui <- fluidPage(
-  titlePanel("Neon"),
+  titlePanel("Neon Data Table"),
   sidebarLayout(position = "left",
                 tabPanel("Table",
                          sidebarPanel(selectInput("selection1", label = h3("Select nlcdClass"), 
