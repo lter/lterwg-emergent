@@ -17,7 +17,7 @@ library(shinyWidgets)
 
 #Loading in the csv files and showing less than 113 columns
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
-
+soilFieldChem <- soilFieldChem[-c(72:113)]
 
 ui <- fluidPage(
   titlePanel("Neon Data Table"),

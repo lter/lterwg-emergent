@@ -34,16 +34,19 @@ allsub <- soilFieldChem%>%
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
             mean_soilTemp = mean(soilTemp, na.rm = TRUE))
 ui <- fluidPage(
-  
   titlePanel("Neon Graphs"),
   sidebarLayout(position = "left",
                 tabPanel("Graph",
-                         sidebarPanel(selectInput("selection2", label = h3("Select Type of Site"), 
+                         sidebarPanel(selectInput("selection", label = h3("Select Type of Site"), 
                                                   choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
                                                   selected = 1),
-                                      selectInput("selection4", label = h3("Soil Temp or Moisture"), 
+                                      selectInput("selection3", label = h3("Soil Temp or Moisture"), 
                                                   choices = c("soilTemp", "soilMoisture"),
-                                                  selected = 1)
+                                                  selected = 1),
+                                      selectInput("selection1", label = h3("Select nlcdClass"), 
+                                                  choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'mixedForest' ),
+                                      selectInput("selection2", label = h3("Select siteID"), 
+                                                  choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
                          )
                 ),
                 mainPanel(plotOutput("distPlot")),
@@ -53,7 +56,15 @@ ui <- fluidPage(
 
 
 server <- function(input, output) {
+  output$select_s1 <- renderUI({
+    
+    selectizeInput('s1', 'Select variable 1', choices = c("select" = "", levels(soilFieldChem$selection1)))
+    
+  })
+  
   output$select_selection2 <- renderUI({
+    
+    
     choice_selection2 <- reactive({
       soilFieldChem %>% 
         filter(selection1 == input$s1) %>% 
@@ -118,7 +129,7 @@ server <- function(input, output) {
       xlim(c(0, 4)) +
       ylim(c(0, 30)) +
       ggtitle('Soil Moisture x Temperatue Forested Plots')
-    g1 
+    g1  
   })
 }
 
