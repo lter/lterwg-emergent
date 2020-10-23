@@ -1,4 +1,4 @@
-#This is the Shiny app for the Neon data
+#This is the Shiny app for the Neon data Graphs
 #Author: Dvir Blander and Katrina Newcomer
 #First loading in the shiny, dplyr, readr libraries.
 #The shiny library is used because this is a shiny app.
@@ -14,6 +14,7 @@ library(shinyWidgets)
 #Note: The files are loaded onto the local machine. The folder should be on GitHub and it's name is NeonFiles.
 #Make sure to set the working directory as the GitHub "NeonFiles" folder.
 #This can be done by clicking Session --> Set Working Directory --> Choose Directory. Then navigate to this directory.
+
 #Loading in the csv files
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
@@ -21,6 +22,7 @@ forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
 forestsub <- forest %>%
   group_by(siteID, nlcdClass) %>%
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+<<<<<<< HEAD
             mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
 grasssub <- grass %>%
   group_by(siteID, nlcdClass) %>%
@@ -28,9 +30,21 @@ grasssub <- grass %>%
             mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
 allsub <- soilFieldChem%>%
   group_by(siteID, nlcdClass) %>%
+=======
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+
+grasssub <- grass %>% 
+  group_by(siteID, nlcdClass) %>% 
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+
+allsub <- soilFieldChem%>% 
+  group_by(siteID, nlcdClass) %>% 
+>>>>>>> parent of 8edd20a... update .groups error
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
 ui <- fluidPage(
+<<<<<<< HEAD
 <<<<<<< HEAD
   titlePanel("Neon"),
   sidebarLayout(position = "right",
@@ -73,8 +87,31 @@ ui <- fluidPage(
                          ),
                 mainPanel(DT::dataTableOutput("table"))
                 )
+=======
+  titlePanel("Neon Graphs"),
+  sidebarLayout(position = "left",
+                tabPanel("Graph",
+                         sidebarPanel(selectInput("selection", label = h3("Select Type of Site"), 
+                                                  choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
+                                                  selected = 1),
+                                      selectInput("selection3", label = h3("Soil Temp or Moisture"), 
+                                                  choices = c("soilTemp", "soilMoisture"),
+                                                  selected = 1),
+                                      selectInput("selection1", label = h3("Select nlcdClass"), 
+                                                  choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'mixedForest' ),
+                                      selectInput("selection2", label = h3("Select siteID"), 
+                                                  choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
+                         )
+                ),
+                mainPanel(plotOutput("distPlot")),
+                mainPanel(plotOutput("distPlot2"))   
+>>>>>>> parent of 8edd20a... update .groups error
   )
+)
+
+
 server <- function(input, output) {
+<<<<<<< HEAD
   tab <- reactive({
 
     soilFieldChem %>%
@@ -89,6 +126,8 @@ server <- function(input, output) {
     tab()
 
   })
+=======
+>>>>>>> parent of 8edd20a... update .groups error
   output$select_s1 <- renderUI({
 
     selectizeInput('s1', 'Select variable 1', choices = c("select" = "", levels(soilFieldChem$selection1)))
@@ -122,8 +161,14 @@ server <- function(input, output) {
 
     })
   })
+<<<<<<< HEAD
 
   output$distPlot <- renderPlot({
+=======
+  
+  output$distPlot <- renderPlot({ 
+    
+>>>>>>> parent of 8edd20a... update .groups error
     if (input$selection == "All Sites") {
       x    <-   soilFieldChem
     }
@@ -133,7 +178,12 @@ server <- function(input, output) {
     else if (input$selection == "Forrested Sites" ) {
       x    <-  forest
     }
+<<<<<<< HEAD
 
+=======
+    
+    
+>>>>>>> parent of 8edd20a... update .groups error
     ggplot(x, aes(x=siteID, y= !!sym(input$selection3))) +
       geom_boxplot() +
       ylim(c(-20, 50)) +
@@ -157,13 +207,20 @@ server <- function(input, output) {
     xsub <- x %>%
       group_by(siteID, nlcdClass) %>%
       summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+<<<<<<< HEAD
                 mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
 
     g1 <- ggplot(xsub, aes(x=mean_soilMoisture, y=mean_soilTemp, color = siteID, label = siteID)) +
+=======
+                mean_soilTemp = mean(soilTemp, na.rm = TRUE)) 
+    
+    g1 <- ggplot(xsub, aes(x=mean_soilMoisture, y=mean_soilTemp, color = siteID, label = siteID)) + 
+>>>>>>> parent of 8edd20a... update .groups error
       geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
       xlim(c(0, 4)) +
       ylim(c(0, 30)) +
       ggtitle('Soil Moisture x Temperatue Forested Plots')
+<<<<<<< HEAD
 <<<<<<< HEAD
     g1
 =======
@@ -173,3 +230,12 @@ server <- function(input, output) {
 }
 # Create Shiny app objects from either an explicit UI/server pair
 shinyApp(ui = ui, server = server)
+=======
+    g1  
+  })
+}
+
+
+# Create Shiny app objects from either an explicit UI/server pair 
+shinyApp(ui = ui, server = server)
+>>>>>>> parent of 8edd20a... update .groups error
