@@ -34,23 +34,23 @@ allsub <- soilFieldChem%>%
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
             mean_soilTemp = mean(soilTemp, na.rm = TRUE))
 ui <- fluidPage(
-  titlePanel("Neon Graphs"),
-  sidebarLayout(position = "left",
+  titlePanel("Neon"),
+  sidebarLayout(position = "right",
                 tabPanel("Graph",
-                         sidebarPanel(selectInput("selection", label = h3("Select Type of Site"), 
-                                                  choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
-                                                  selected = 1),
-                                      selectInput("selection3", label = h3("Soil Temp or Moisture"), 
-                                                  choices = c("soilTemp", "soilMoisture"),
-                                                  selected = 1),
-                                      selectInput("selection1", label = h3("Select nlcdClass"), 
-                                                  choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'mixedForest' ),
-                                      selectInput("selection2", label = h3("Select siteID"), 
-                                                  choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
+                         sidebarPanel(      selectInput("selection", label = h3("Select Type of Site"), 
+                                                        choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
+                                                        selected = 1),
+                                            selectInput("selection3", label = h3("Soil Temp or Moisture"), 
+                                                        choices = c("soilTemp", "soilMoisture"),
+                                                        selected = 1)
+                                            
                          )
+                         
+                         
+                         
                 ),
                 mainPanel(plotOutput("distPlot")),
-                mainPanel(plotOutput("distPlot2"))   
+                mainPanel(plotOutput("distPlot2"))
   )
 )
 
