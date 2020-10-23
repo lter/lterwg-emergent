@@ -18,11 +18,8 @@ library(shinyWidgets)
 
 #Loading in the csv files
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
-#<<<<<<< HEAD
 grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
 forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
-#=======
-#>>>>>>> parent of 373efc5... Table less columns and WIP for graphs
 
 
 ui <- fluidPage(
