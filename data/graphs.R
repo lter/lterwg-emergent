@@ -1,4 +1,4 @@
-#This is the Shiny app for the Neon data Graphs
+#This is the Shiny app for the Neon data
 #Author: Dvir Blander and Katrina Newcomer
 #First loading in the shiny, dplyr, readr libraries.
 #The shiny library is used because this is a shiny app.
@@ -14,7 +14,6 @@ library(shinyWidgets)
 #Note: The files are loaded onto the local machine. The folder should be on GitHub and it's name is NeonFiles.
 #Make sure to set the working directory as the GitHub "NeonFiles" folder.
 #This can be done by clicking Session --> Set Working Directory --> Choose Directory. Then navigate to this directory.
-
 #Loading in the csv files
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
@@ -22,40 +21,60 @@ forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
 forestsub <- forest %>% 
   group_by(siteID, nlcdClass) %>% 
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
-
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
 grasssub <- grass %>% 
   group_by(siteID, nlcdClass) %>% 
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
-
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
 allsub <- soilFieldChem%>% 
   group_by(siteID, nlcdClass) %>% 
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
 ui <- fluidPage(
-  titlePanel("Neon Graphs"),
-  sidebarLayout(position = "left",
+  titlePanel("Neon"),
+  sidebarLayout(position = "right",
                 tabPanel("Graph",
-                         sidebarPanel(selectInput("selection", label = h3("Select Type of Site"), 
-                                                  choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
-                                                  selected = 1),
-                                      selectInput("selection3", label = h3("Soil Temp or Moisture"), 
-                                                  choices = c("soilTemp", "soilMoisture"),
-                                                  selected = 1),
-                                      selectInput("selection1", label = h3("Select nlcdClass"), 
-                                                  choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'mixedForest' ),
-                                      selectInput("selection2", label = h3("Select siteID"), 
-                                                  choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
-                         )
+                         sidebarPanel(      selectInput("selection", label = h3("Select Type of Site"), 
+                                                        choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
+                                                        selected = 1),
+                                            selectInput("selection3", label = h3("Soil Temp or Moisture"), 
+                                                        choices = c("soilTemp", "soilMoisture"),
+                                                        selected = 1)
+                                            
+                         ),
+                         mainPanel(plotOutput("distPlot")),
+                         mainPanel(plotOutput("distPlot2"))
                 ),
-                mainPanel(plotOutput("distPlot")),
-                mainPanel(plotOutput("distPlot2"))   
+                tabPanel("Table",
+                         sidebarPanel(      selectInput("selection1", label = h3("Select nlcdClass"), 
+                                                        choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'evergreenForest
+                                                        ' ),
+                                            choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'mixedForest' ),
+                         selectInput("selection2", label = h3("Select siteID"), 
+                                     choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
+                         selectInput("selection4", label = h3("Select biophysicalCriteria"), 
+                                     choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria)), selected = 'OK - no known exceptions'),
+                         selectInput("selection5", label = h3("Select sampleTiming"), 
+                                     choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='peakGreenness')
+                         ), 
+                mainPanel(DT::dataTableOutput("table"))
+                )
+  
   )
-)
-
-
 server <- function(input, output) {
+  tab <- reactive({ 
+    
+    soilFieldChem %>% 
+      filter(nlcdClass == input$selection1) %>% 
+      filter(siteID == input$selection2) %>%
+      filter(biophysicalCriteria == input$selection4) %>%
+      filter(sampleTiming == input$selection5 )
+    
+  })
+  output$table <-DT::renderDataTable({
+    tab()
+    
+  })
   output$select_s1 <- renderUI({
     
     selectizeInput('s1', 'Select variable 1', choices = c("select" = "", levels(soilFieldChem$selection1)))
@@ -87,7 +106,6 @@ server <- function(input, output) {
   })
   
   output$distPlot <- renderPlot({ 
-    
     if (input$selection == "All Sites") {
       x    <-   soilFieldChem
     }
@@ -97,7 +115,6 @@ server <- function(input, output) {
     else if (input$selection == "Forrested Sites" ) {
       x    <-  forest
     }
-    
     
     ggplot(x, aes(x=siteID, y= !!sym(input$selection3))) +
       geom_boxplot() + 
@@ -122,17 +139,15 @@ server <- function(input, output) {
     xsub <- x %>% 
       group_by(siteID, nlcdClass) %>% 
       summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-                mean_soilTemp = mean(soilTemp, na.rm = TRUE)) 
+                mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep") 
     
     g1 <- ggplot(xsub, aes(x=mean_soilMoisture, y=mean_soilTemp, color = siteID, label = siteID)) + 
       geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
       xlim(c(0, 4)) +
       ylim(c(0, 30)) +
       ggtitle('Soil Moisture x Temperatue Forested Plots')
-    g1  
+    g1 
   })
 }
-
-
 # Create Shiny app objects from either an explicit UI/server pair 
 shinyApp(ui = ui, server = server)
