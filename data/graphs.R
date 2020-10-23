@@ -59,8 +59,6 @@ ui <- fluidPage(
                          ),
                 mainPanel(DT::dataTableOutput("table"))
                 )
-
->>>>>>> 8edd20a258f102a01bb44795d5a924cbbe305991
   )
 server <- function(input, output) {
   tab <- reactive({
