@@ -31,6 +31,7 @@ allsub <- soilFieldChem%>%
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
             mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
 ui <- fluidPage(
+<<<<<<< HEAD
   titlePanel("Neon"),
   sidebarLayout(position = "right",
                 tabPanel("Graph",
@@ -44,6 +45,19 @@ ui <- fluidPage(
                          ),
                          mainPanel(plotOutput("distPlot")),
                          mainPanel(plotOutput("distPlot2"))
+=======
+  
+  titlePanel("Neon Graphs"),
+  sidebarLayout(position = "left",
+                tabPanel("Graph",
+                         sidebarPanel(selectInput("selection2", label = h3("Select Type of Site"), 
+                                                  choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
+                                                  selected = 1),
+                                      selectInput("selection4", label = h3("Soil Temp or Moisture"), 
+                                                  choices = c("soilTemp", "soilMoisture"),
+                                                  selected = 1)
+                         )
+>>>>>>> parent of 373efc5... Table less columns and WIP for graphs
                 ),
                 tabPanel("Table",
                          sidebarPanel(      selectInput("selection1", label = h3("Select nlcdClass"),
@@ -69,6 +83,7 @@ server <- function(input, output) {
       filter(biophysicalCriteria == input$selection4) %>%
       filter(sampleTiming == input$selection5 )
 
+<<<<<<< HEAD
   })
   output$table <-DT::renderDataTable({
     tab()
@@ -83,6 +98,10 @@ server <- function(input, output) {
   output$select_selection2 <- renderUI({
 
 
+=======
+server <- function(input, output) {
+  output$select_selection2 <- renderUI({
+>>>>>>> parent of 373efc5... Table less columns and WIP for graphs
     choice_selection2 <- reactive({
       soilFieldChem %>%
         filter(selection1 == input$s1) %>%
@@ -145,7 +164,11 @@ server <- function(input, output) {
       xlim(c(0, 4)) +
       ylim(c(0, 30)) +
       ggtitle('Soil Moisture x Temperatue Forested Plots')
+<<<<<<< HEAD
     g1
+=======
+    g1 
+>>>>>>> parent of 373efc5... Table less columns and WIP for graphs
   })
 }
 # Create Shiny app objects from either an explicit UI/server pair
