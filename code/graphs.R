@@ -1,4 +1,4 @@
-#This is the Shiny app for the Neon data
+#This is the Shiny app for the Neon data showcasing the graphs for the NEON data
 #Author: Dvir Blander and Katrina Newcomer
 #First loading in the shiny, dplyr, readr libraries.
 #The shiny library is used because this is a shiny app.
