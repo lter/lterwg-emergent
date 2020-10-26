@@ -11,10 +11,8 @@ library(dplyr)
 library(readr)
 library(DT)
 library(shinyWidgets)
-#Note: The files are loaded onto the local machine. The folder should be on GitHub and it's name is NeonFiles.
-#Make sure to set the working directory as the GitHub "NeonFiles" folder.
-#This can be done by clicking Session --> Set Working Directory --> Choose Directory. Then navigate to this directory.
-#Loading in the csv files
+#Note: The file needed is called soilFieldChem.csv and it is already in the same directory as this file.
+#Loading in the csv file
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
 forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
