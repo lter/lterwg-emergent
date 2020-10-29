@@ -3,13 +3,10 @@
 #First loading in the shiny, dplyr, readr libraries.
 #The shiny library is used because this is a shiny app.
 #The dplyr and readr libraries are used to help read in the data.
-#The DT library is used for the datatables
-library(plotly)
 library(ggplot2)
 library(shiny)
 library(dplyr)
 library(readr)
-library(DT)
 library(shinyWidgets)
 #Note: The file needed is called soilFieldChem.csv and it is already in the same directory as this file.
 #Loading in the csv file
@@ -28,53 +25,62 @@ allsub <- soilFieldChem%>%
   group_by(siteID, nlcdClass) %>%
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
             mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
+
 ui <- fluidPage(
   titlePanel("Neon Graphs"),
-  mainPanel(
-    plotOutput("allsub_temp"),
-    plotOutput("allsub_moist"),
-    plotOutput("grasssub_temp"),
-    plotOutput("grasssub_moist"),
-    plotOutput("forestsub_temp"),
-    plotOutput("forestsub_moist")
-  )
+  selectInput("siteType", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
+  selectInput("tempmoist", "Select Either Temperature or Moisture", choices = c("Temperature", "Moisture")),
+  plotOutput("boxplot"),
+  plotOutput("both")
 )
+
+
 server <- function(input, output) {
-  
-  output$allsub_temp <- renderPlot({
-    ggplot(allsub, aes(x=siteID, y=mean_soilTemp))+
-      geom_boxplot() + 
-      ggtitle("Temperature by Site ID for All Sites")
+  #plotting the boxplot based on the selected site and temp/moisture
+  output$boxplot <- renderPlot({
+    #selecting site
+    site = allsub
+    if(input$siteType == "All Sites") {
+      site = allsub
+    } else if(input$siteType == "Forrested Sites") {
+      site = forestsub
+    } else if(input$siteType == "Grassland Sites") {
+      site = grasssub
+    }
+    
+    #selecting either temperature or mositure
+    if(input$tempmoist == "Temperature") {
+      ggplot(site, mapping = aes(x = siteID, y = mean_soilTemp)) + 
+        geom_boxplot() + 
+        ylim(c(-20, 50)) +
+        theme(axis.text.x = element_text(angle=45)) +
+        ggtitle(input$siteType)
+    } else if(input$tempmoist == "Moisture") {
+      ggplot(site, mapping = aes(x = siteID, y = mean_soilMoisture)) + 
+        geom_boxplot() + 
+        ylim(c(-20, 50)) +
+        theme(axis.text.x = element_text(angle=45)) +
+        ggtitle(input$siteType)
+    }
   })
   
-  output$allsub_moist <- renderPlot({
-    ggplot(allsub, aes(x=siteID, y=mean_soilMoisture))+
-      geom_boxplot() + 
-      ggtitle("Moisture by Site ID for All Sites")
-  })
-  
-  output$grasssub_temp <- renderPlot({
-    ggplot(grasssub, aes(x=siteID, y=mean_soilTemp))+
-      geom_boxplot()+
-      ggtitle("Temperature by Site ID for Grassland Sites")
-  })
-  
-  output$grasssub_moist <- renderPlot({
-    ggplot(grasssub, aes(x=siteID, y=mean_soilMoisture))+
-      geom_boxplot() + 
-      ggtitle("Moisture by Site ID for Grassland Sites")
-  })
-  
-  output$forestsub_temp <- renderPlot({
-    ggplot(forestsub, aes(x=siteID, y=mean_soilTemp))+
-      geom_boxplot() + 
-      ggtitle("Moisture by Site ID for Forrested Sites")
-  })
-  
-  output$forestsub_moist <- renderPlot({
-    ggplot(forestsub, aes(x=siteID, y=mean_soilMoisture))+
-      geom_boxplot() + 
-      ggtitle("Moisture by Site ID for Forrested Sites")
+  #plotting the relationship for temp and moisture based on the siteID
+  output$both <- renderPlot({
+    #selecting site
+    site = allsub
+    if(input$siteType == "All Sites") {
+      site = allsub
+    } else if(input$siteType == "Forrested Sites") {
+      site = forestsub
+    } else if(input$siteType == "Grassland Sites") {
+      site = grasssub
+    }
+    
+    #plotting the relationship for temp and moisture
+    ggplot(site, mapping = aes(x = mean_soilMoisture, y = mean_soilMoisture)) + 
+      geom_point() + 
+      theme(axis.text.x = element_text(angle=45)) +
+      ggtitle("Temperature and Moisture Relationship")
   })
   
 }
