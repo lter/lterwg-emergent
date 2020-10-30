@@ -6,6 +6,52 @@ output: html_document
 runtime: shiny
 ---
 
+
+```r{}
+#Next step: get table to show up
+ui <- fluidPage(
+  titlePanel("NEON Shiny App"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("fileInput", "Choose the File you want to look at",
+                             choices = c("categoricalcodes", "validation"),
+                             selected = "categoricalcodes"
+      )
+    ),
+    mainPanel("The results will go here", 
+              DT::dataTableOutput("mytable")
+    )
+  )
+)
+
+# error is here, trying to make an output table
+server <- function(input, output) {
+  output$results <- DT::renderDataTable({
+   validation
+  })
+}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Description
 This is a file that creates a shiny web environment for the EMERGENT data. This returns a shiny environment for users to interact with.
 

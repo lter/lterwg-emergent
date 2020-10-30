@@ -1,5 +1,5 @@
 #This is the Shiny app for the Neon data
-#Author: Dvir Blander
+#Author: Dvir Blander and Katrina Newcomer
 #First loading in the shiny, dplyr, readr libraries.
 #The shiny library is used because this is a shiny app.
 #The dplyr and readr libraries are used to help read in the data. 
@@ -8,86 +8,138 @@ library(shiny)
 library(dplyr)
 library(readr)
 library(DT)
-
+library(shinyWidgets)
+library(ggplot2)
 #Note: The files are loaded onto the local machine. The folder should be on GitHub and it's name is NeonFiles.
 #Make sure to set the working directory as the GitHub "NeonFiles" folder.
 #This can be done by clicking Session --> Set Working Directory --> Choose Directory. Then navigate to this directory.
 
 #Loading in the csv files
-neonFiles <- list.files(pattern = "*.csv")
-dat<-lapply(neonFiles,read.csv)
+soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 
-#Need to join the categorial codes and validation files into one big dataframe each
-categoricalcodes <- data.frame(dat[1])
-for(k in 2:20) {
-  categoricalcodes <- rbind(categoricalcodes, data.frame(dat[k]))
-}
-validation <- data.frame(dat[21])
-for(k in 22:40) {
-  validation <- rbind(validation, data.frame(dat[k]))
-}
+
 
 
 ui <- fluidPage(
   title = "NEON Shiny App",
   sidebarLayout(
     sidebarPanel(
-      textInput(inputId = "caption",
-                label = "Caption:",
-                value = "Data Summary"),
-      
-      # Input: Selector for choosing dataset ----
-      selectInput(inputId = "dataset",
-                  label = "Choose a dataset:",
-                  choices = c("categoricalCodes","validation")),
-      
-      # Input: Numeric entry for number of obs to view ----
-      numericInput(inputId = "obs",
-                   label = "Number of observations to view:",
-                   value = 10),
-      conditionalPanel(
-        'input.dataset === "categoricalCodes"',
-        helpText("Click the tab that you want to look at.")
-      ),
-      conditionalPanel(
-        'input.dataset === "validation"',
-        helpText("Click the tab that you want to look at.")
+      selectizeGroupUI(
+        id = "my-filters",
+        inline = FALSE,
+        params = list(
+          siteID = list(inputId = "siteID", title = "Select Site ID", choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
+          nlcdClass = list(inputId = "nlcdClass", title = "Select nlcdClass", choices = c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'MI'),
+          biophysicalCriteria = list(inputId = "biophysicalCriteria", title = "Select biophysicalCriteria", choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria)), selected='OK'),
+          sampleTiming = list(inputId = "sampleTiming", title = "Select sampleTiming", choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='dryWetTransition'),
+          soilTemp = list(inputId = "soilTemp", title = "Select soilTemp", choices = c("choose" = "", levels(soilFieldChem$soilTemp)))
+        )
       )
     ),
+    
     mainPanel(
-      # Output: Formatted text for caption ----
-      h3(textOutput("caption", container = span)),
-      
-      # Output: Verbatim text for data summary ----
-      verbatimTextOutput("summary"),
-      
-      # Output: HTML table with requested number of observations ----
-      tableOutput("view"),
-      tabsetPanel(
-        id = 'dataset',
-        tabPanel("categoricalCodes", DT::dataTableOutput("mytable1")),
-        tabPanel("validation", DT::dataTableOutput("mytable2"))
+      tableOutput("table")
       )
     )
   )
-)
 
 
-  # sorted columns are colored now because CSS are attached to them
-  output$mytable1 <- DT::renderDataTable({
-    reactive_data <- reactive({
-      categoricalCodes %>%
-        filter(variable1 == input$pubCode)    
+server <- function(input, output, session) {
+  soilFieldChem <- reactive({ 
+    
+    soilFieldChem <- soilFieldChem %>% 
+      filter(siteID == 'BART') %>% 
+      filter(nlcdClass == input$nlcdClass) %>% 
+      filter(biophysicalCriteria == input$biophysicalCriteria) %>% 
+      filter(sampleTiming == input$sampleTiming) %>% 
+      filter(soilTemp == input$soilTemp)
+    
+})
+  
+  output$select_siteID <- renderUI({
+    
+    selectizeInput('siteID', 'Select variable 1', choices = c("select" = "", levels(soilFieldChem$siteID)), selected = "BART")
+    
+  })
+  
+  output$select_nlcdClass <- renderUI({
+    
+    
+    choice_var2 <- reactive({
+      soilFieldChem %>% 
+        filter(siteID = input$siteID) %>% 
+        pull(nlcdClass) %>% 
+        as.character()
       
-    }) 
-    DT::datatable(categoricalcodes, filter='top', options = list(orderClasses = TRUE))
+    })
+    
+    selectizeInput('var2', 'Select variable 2', choices = c("select" = "", soilFieldChem$nlcdClass)) # <- put the reactive element here
+    
   })
   
-  # customize the length drop-down menu; display 5 rows per page by default
-  output$mytable2 <- DT::renderDataTable({
-    DT::datatable(validation, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  output$select_var3 <- renderUI({
+    
+    choice_var3 <- reactive({
+      soilFieldChem %>% 
+        filter(siteID == 'BART') %>% 
+        filter(nlcdClass == input$var2) %>% 
+        pull(biophysicalCriteria) %>% 
+        as.character()
+      
+    })
+    
+    selectizeInput('var3', 'Select variable 3', choices = c("select" = "", sfctabe$choice_var3()))
+    
   })
   
+  output$select_var4 <- renderUI({
+    
+    choice_var4 <- reactive({
+      soilFieldChem %>% 
+        filter(siteID == sfctabe$siteID) %>% 
+        filter(nlcdClass == input$var2) %>% 
+        filter(biophysicalCriteria == input$var3) %>% 
+        pull(sampleTiming) %>% 
+        as.character()
+      
+    })
+    
+    selectizeInput('var4', 'Select variable 4', choices = c("select" = "", choice_var4()))
+    
+  })
+  
+  output$select_var5 <- renderUI({
+    
+    choice_var5 <- reactive({
+     soilFieldChem %>% 
+        filter(siteID == 'BAR') %>% 
+        filter(nlcdClass == input$var2) %>% 
+        filter(biophysicalCriteria == input$var3) %>% 
+        filter(sampleTiming == input$var4) %>% 
+        pull(soilTemp) %>% 
+        as.character()
+      
+    })  
+    
+    selectizeInput('var5', 'Select variable 5', choices = c("select" = "", choice_var5()))
+    
+  })
+  
+  output$table <- renderTable({
+    soilFieldChem <- soilFieldChem %>%
+      filter(siteID == 'BART') %>% 
+      filter(nlcdClass == input$var2) %>% 
+      filter(biophysicalCriteria == input$var3) %>% 
+      filter(sampleTiming == input$var4) %>% 
+      pull(soilTemp) %>% 
+      as.character()
+    
+  })
+ 
+options = list(height = 500)
+
+
 }
+
 shinyApp(ui = ui, server = server)
 
