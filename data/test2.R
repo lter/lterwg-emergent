@@ -36,6 +36,7 @@ allsub <- soilFieldChem%>%
 ui <- fluidPage(
 
   titlePanel("Neon"),
+<<<<<<< HEAD
   sidebarLayout(position = "right",
     tabPanel("Graph",
              sidebarPanel(      selectInput("selection", label = h3("Select Type of Site"), 
@@ -69,9 +70,35 @@ ui <- fluidPage(
   )
     )
 
+=======
+  
+  
+  sidebarLayout( 
+    
+    
+    sidebarPanel( 
+      
+      
+      selectInput("selection", label = h3("Select Type of Site"), 
+                  choices = c("All Sites", "Forrested Sites", "Grassland Sites"),
+                  selected = 1),
+      selectInput("selection1", label = h3("Select nlcdClass"), 
+                  choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'MI'),
+      selectInput("selection2", label = h3("Select Type of Site"), 
+                choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART')
+    ),
+    
+   
+    mainPanel(
+      tableOutput("table"),
+      plotOutput("distPlot")
+      
+      
+    ))
+)
+>>>>>>> parent of c3719fc... soilmoisture update
 
 server <- function(input, output) {
-
   tab <- reactive({ 
     
     soilFieldChem %>% 
@@ -116,7 +143,6 @@ server <- function(input, output) {
   })
     
   output$distPlot <- renderPlot({ 
-
     if (input$selection == "All Sites") {
       x    <-   soilFieldChem
     }
@@ -126,13 +152,17 @@ server <- function(input, output) {
     else if (input$selection == "Forrested Sites" ) {
       x    <-  forest
     }
+<<<<<<< HEAD
 
     
     ggplot(x, aes(x=siteID, y= !!sym(input$selection3))) +
+=======
+    ggplot(x, aes(x=siteID, y=soilTemp)) +
+>>>>>>> parent of c3719fc... soilmoisture update
       geom_boxplot() + 
       ylim(c(-20, 50)) +
       theme(axis.text.x = element_text(angle=45)) +
-    ggtitle("for Each Site ID")
+    ggtitle("Soil Temp for Each Site ID")
     
     
  
