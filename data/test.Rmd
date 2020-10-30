@@ -1,0 +1,99 @@
+---
+title: "test"
+author: "Kate Newcomer"
+date: "October 9, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(devtools)
+library(plyr)
+library(dplyr)
+#library(qdap)
+library(stringr)
+library(xtable)
+library(ggplot2)
+library(plotly)
+library(neonUtilities)
+# install neonNtrans if needed
+install_github("NEONScience/NEON-Nitrogen-Transformations/neonNTrans", dependencies=TRUE)  
+library(neonNTrans)  
+
+# download soil field data #
+soil_fieldL1 <- loadByProduct(dpID='DP1.10086.001', check.size = TRUE, package = 'basic', site = 'all')
+soil_fieldBgc <- soil_fieldL1$sls_bgcSubsampling
+# remove unwanted fields
+soil_fieldBgc <- select(soil_fieldBgc, sampleID, cnSampleID, bgcArchiveID,   
+                        bgcSampleCondition=sampleCondition, bgcDataQF)
+soil_fieldCore <- soil_fieldL1$sls_soilCoreCollection
+soil_fieldMoist <- soil_fieldL1$sls_soilMoisture
+soil_fieldPh <- soil_fieldL1$sls_soilpH
+soil_fieldVars <- soil_fieldL1$variables
+
+# join soil field tables: core collection, moisture, pH, bgc sub-sampling
+soilField <- left_join(soil_fieldCore, soil_fieldMoist, by=c('sampleID', 'domainID', 'siteID', 'namedLocation', 'plotID', 'collectDate', 'horizon', 'sampleCode') ) %>%
+  select(-uid.x, -uid.y, -samplingProtocolVersion.y)
+soilField <- left_join(soilField, soil_fieldPh, by=c('sampleID', 'sampleCode', 'domainID', 'siteID',
+                                                     'plotID', 'namedLocation', 'collectDate')) %>%
+  select(-uid, -freshMassBoatMass, -dryMassBoatMass, -pHSoilInWaterMass, -pHWaterVol,
+         -pHSoilInCaClMass, -pHCaClVol, -pHSampleID)
+soilField <- left_join(soilField, soil_fieldBgc, by=c('sampleID') )
+
+
+# download soil chem and isotope data #
+soil_chemL1 <- loadByProduct(dpID='DP1.10078.001', check.size = FALSE,package = 'basic', site = 'all')
+soil_chem <- soil_chemL1$sls_soilChemistry %>%
+  select(sampleID, cnSampleID, sampleType,acidTreatment, nitrogenPercent, organicCPercent,
+         CNratio, cnPercentQF, percentAccuracyQF, analyticalRepNumber, cnRemarks=remarks,
+         cnLaboratoryName=laboratoryName, cnTestMethod=testMethod, cnInstrument=instrument, 
+         cnDataQF=dataQF)
+
+soil_isoL1 <- loadByProduct(dpID='DP1.10100.001', check.size = FALSE,package = 'basic', site = 'all')
+soil_iso <- soil_isoL1$sls_soilStableIsotopes %>%
+  select(sampleID, cnSampleID, d15N, organicd13C, cnIsotopeQF, isotopeAccuracyQF,
+         isoRemarks=remarks, isoLaboratoryName=laboratoryName, isoTestMethod=testMethod, 
+         isoInstrument=instrument, isoAnalyticalRepNumber=analyticalRepNumber,
+         isoDataQF=dataQF)
+
+
+
+# N transformation rate measurements
+soil_NtransL1 <- loadByProduct(dpID='DP1.10080.001', check.size = FALSE,package = 'basic', site = 'all')
+soilNtrans <- def.calc.ntrans(kclInt = soil_NtransL1$ntr_internalLab, 
+                              kclIntBlank = soil_NtransL1$ntr_internalLabBlanks, 
+                              kclExt = soil_NtransL1$ntr_externalLab, 
+                              soilMoist = soil_NtransL1$sls_soilMoisture, dropFlagged = TRUE)
+# remove duplicate records
+soilNtransNoDupes <- soilNtrans[!duplicated(soilNtrans$sampleID), ]
+
+
+# join soil chem data tables: soil chem, soil isotopes, N transformation
+soilChem <- left_join(soil_chem, soil_iso, by=c('sampleID', 'cnSampleID'))
+soilChem <- left_join(soilChem, soilNtrans, by=c('sampleID'))
+
+
+# join soil chem and field data tables
+soilFieldChem <- left_join(soilField, soilChem, by=c('sampleID', 'cnSampleID') )
+write.csv(soilFieldChem, "soilFieldChem.csv")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
