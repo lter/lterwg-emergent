@@ -23,17 +23,15 @@ grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
 forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
 forestsub <- forest %>%
   group_by(siteID, nlcdClass) %>%
-  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
-grasssub <- grass %>%
-  group_by(siteID, nlcdClass) %>%
-  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
+  summarise(mean_soilMoisture = mean(as.numeric(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(as.numeric(soilTemp), na.rm = TRUE))
+            
+
+
 allsub <- soilFieldChem%>%
   group_by(siteID, nlcdClass) %>%
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
             mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
-
 ui <- fluidPage(
   titlePanel("Neon Graphs"),
   sidebarLayout(
@@ -52,10 +50,10 @@ ui <- fluidPage(
               tabPanel("2 var", plotOutput("both")),
               tabPanel("US View", plotOutput("no"))
 
-)
-))
 
 )
+
+
 server <- function(input, output) {
   #plotting the boxplot based on the selected site and temp/moisture
   output$boxplot <- renderPlot({
@@ -95,13 +93,14 @@ server <- function(input, output) {
   
   #plotting the relationship for temp and moisture based on the siteID
   output$both <- renderPlot({
+
     #selecting site
     site = forest %>% 
       filter(nlcdClass == "deciduousForest") %>% 
       filter(sampleTiming == "peakGreenness") %>% 
       group_by(siteID) %>% 
-      summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-                mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+      summarise(mean_soilMoisture = mean(as.numeric(soilMoisture), na.rm = TRUE),
+                mean_soilTemp = mean(as.numeric(soilTemp), na.rm = TRUE))
     if(input$siteType == "All Sites") {
       site = soilFieldChem
     } else if(input$siteType == "Forrested Sites") {
@@ -116,7 +115,7 @@ server <- function(input, output) {
     }
     
     #plotting the relationship for temp and moisture
-    ggplot(site, mapping = aes(x = mean(soilMoisture), y = mean(soilTemp) + 
+    ggplot(site, mapping = aes(x = mean(as.numeric(soilMoisture)), y = mean(as.numeric(soilTemp)) + 
       geom_point() + 
       theme(axis.text.x = element_text(angle=45)) +
       ggtitle("Temperature and Moisture Relationship")

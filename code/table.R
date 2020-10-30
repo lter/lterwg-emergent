@@ -55,7 +55,7 @@ server <- function(input, output) {
                   extensions = 'Buttons', options = list(dom = 'Bfrtip',    buttons = list(
                     list(
                       extend = 'colvis', 
-                      columns = c(10:30,31:70)
+                      columns = c(0,10:30,31:70)
                     ),
                     list(
                       extend = 'colvisGroup', 
@@ -69,7 +69,7 @@ server <- function(input, output) {
                     )
                   ),
                   columnDefs = list(
-                    list(targets = c(10:30,31:71), visible = FALSE)
+                    list(targets = c(0,10:30,31:71), visible = FALSE)
                   )
                   )
     )
