@@ -17,7 +17,7 @@ soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 soilFieldChem <- soilFieldChem[-c(72:113)]
 
 ui <- fluidPage(
-  titlePanel("Neon"),
+  titlePanel("Neon Data Table"),
   sidebarLayout(position = "left",
                 tabPanel("Table",
                          sidebarPanel(selectInput("selection1", label = h3("Select nlcdClass"), 
@@ -41,18 +41,41 @@ server <- function(input, output) {
   
   tab <- reactive({ 
     
-    soilFieldChem %>% 
+    soilFieldChem <- soilFieldChem %>% 
       filter(nlcdClass == input$selection1) %>% 
       filter(siteID == input$selection2) %>%
       filter(biophysicalCriteria == input$selection4) %>%
       filter(sampleTiming == input$selection5 )
     
-  })
-  output$table <-DT::renderDataTable({
-    tab()
+
     
   })
-} 
+  output$table <-DT::renderDataTable({
+    DT::datatable(tab(),filter = "top", 
+                  extensions = 'Buttons', options = list(dom = 'Bfrtip',    buttons = list(
+                    list(
+                      extend = 'colvis', 
+                      columns = c(10:30,31:70)
+                    ),
+                    list(
+                      extend = 'colvisGroup', 
+                      text = "Show all",
+                      show = ":hidden"
+                    ),
+                    list(
+                      extend = 'colvisGroup', 
+                      text = "Show none",
+                      hide = ":visible"
+                    )
+                  ),
+                  columnDefs = list(
+                    list(targets = c(10:30,31:71), visible = FALSE)
+                  )
+                  )
+    )
+
+ }) 
+}
   
 shinyApp(ui = ui, server = server)  
   
