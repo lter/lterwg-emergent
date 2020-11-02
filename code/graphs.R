@@ -17,131 +17,125 @@ library(wesanderson)
 
 #Note: The file needed is called soilFieldChem.csv and it is already in the same directory as this file.
 #Loading in the csv file
+
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
-soil_FieldPh <- read.csv(file = 'soilFieldPh.csv')
+soilFieldPh <- read.csv(file = 'soilFieldPh.csv')
 grass <- soilFieldChem[grep('grassland|Grassland', soilFieldChem$nlcdClass), ]
 forest <- soilFieldChem[grep('forest|Forest', soilFieldChem$nlcdClass), ]
 forestsub <- forest %>%
   group_by(siteID, nlcdClass) %>%
-  summarise(mean_soilMoisture = mean(as.numeric(soilMoisture, na.rm = TRUE),
-            mean_soilTemp = mean(as.numeric(soilTemp), na.rm = TRUE))
-            
-
-
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
+grasssub <- grass %>%
+  group_by(siteID, nlcdClass) %>%
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
 allsub <- soilFieldChem%>%
   group_by(siteID, nlcdClass) %>%
   summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
             mean_soilTemp = mean(soilTemp, na.rm = TRUE), .groups="keep")
+soilT <- soilFieldChem$soilTemp
+soilM <- soilFieldChem$soilMoisture
+soilP <- soilFieldPh$soilInCaClpH
+
 ui <- fluidPage(
   titlePanel("Neon Graphs"),
-  sidebarLayout(
   sidebarPanel(
-  tabsetPanel(type="tabs",
-              tabPanel("Plot ",selectInput("siteType", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
-                       selectInput("tempmoist", "Select Either Temperature or Moisture", choices = c("Temperature", "Moisture", "pH in CaCl2")),
-                       selectInput("nlcdClass", "Specify nlcdClass",choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)) )),
-              tabPanel("2 var" ),
-              tabPanel("US view")
-  
-  )),
-  mainPanel( 
-  tabsetPanel(type="tabs",
-              tabPanel("Plot ",plotOutput("boxplot")),
-              tabPanel("2 var", plotOutput("both")),
-              tabPanel("US View", plotOutput("no"))
-
-
+    conditionalPanel(condition="input.conditionedPanels== 'BoxPlot' ", selectInput("siteType", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
+                     selectInput("tempmoist", "Select Either Temperature or Moisture", choices = c("Temperature", "Moisture"))),
+    conditionalPanel(condition="input.conditionedPanels== '2 Variable' ", selectInput("var1", "Select variable 1", choices = c("soilMoisture", "soilTemp", "soilInCaClpH")),
+                     selectInput("var2", "Select variable 2", choices = c("soilMoisture", "soilTemp", "soilInCaClpH"))),
+    conditionalPanel(condition="input.conditionedPanels == 'map' ", selectInput("siteType1", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")))
+    
+    ),
+  mainPanel (
+  tabsetPanel(
+    id="conditionedPanels",
+      tabPanel("BoxPlot", plotOutput("boxplot")),
+      tabPanel("2 Variable",plotOutput("both")),
+      tabPanel("map", plotOutput("no"))
 )
-
+)
+)
 
 server <- function(input, output) {
   #plotting the boxplot based on the selected site and temp/moisture
   output$boxplot <- renderPlot({
     #selecting site
-    site = soilFieldChem
+    site = allsub
     if(input$siteType == "All Sites") {
-      site = soilFieldChem
+      site = allsub
     } else if(input$siteType == "Forrested Sites") {
-      site =forest
+      site = forestsub
     } else if(input$siteType == "Grassland Sites") {
-      site = grass
+      site = grasssub
     }
     
     #selecting either temperature or mositure
     if(input$tempmoist == "Temperature") {
-      ggplot(site, mapping = aes(x = siteID, y = soilTemp)) + 
+      ggplot(site, mapping = aes(x = siteID, y = mean_soilTemp)) + 
         geom_boxplot() + 
-        ylim(c(-20, 50)) +
+        ylim(c(0, 30)) +
         theme(axis.text.x = element_text(angle=45)) +
         ggtitle(input$siteType)
     } else if(input$tempmoist == "Moisture") {
-      ggplot(site, mapping = aes(x = siteID, y = soilMoisture)) + 
-        geom_boxplot() + 
-        ylim(c(-20, 50)) +
-        theme(axis.text.x = element_text(angle=45)) +
-        ggtitle(input$siteType)
-    } else {
-      ggplot(soil_FieldPh, mapping = aes(x = siteID, y = soilInCaClpH)) + 
+      ggplot(site, mapping = aes(x = siteID, y = mean_soilMoisture)) + 
         geom_boxplot() + 
         ylim(c(0, 10)) +
         theme(axis.text.x = element_text(angle=45)) +
         ggtitle(input$siteType)
     }
-    
-    
   })
   
   #plotting the relationship for temp and moisture based on the siteID
   output$both <- renderPlot({
-
     #selecting site
-    site = forest %>% 
-      filter(nlcdClass == "deciduousForest") %>% 
-      filter(sampleTiming == "peakGreenness") %>% 
-      group_by(siteID) %>% 
-      summarise(mean_soilMoisture = mean(as.numeric(soilMoisture), na.rm = TRUE),
-                mean_soilTemp = mean(as.numeric(soilTemp), na.rm = TRUE))
+    site = allsub
     if(input$siteType == "All Sites") {
-      site = soilFieldChem
+      site = allsub
     } else if(input$siteType == "Forrested Sites") {
-      site = forest %>% 
-        filter(nlcdClass == "deciduousForest") %>% 
-        filter(sampleTiming == "peakGreenness") %>% 
-        group_by(siteID) %>% 
-        summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
-                  mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+      site = forestsub
     } else if(input$siteType == "Grassland Sites") {
-      site = grass
+      site = grasssub
     }
     
-    #plotting the relationship for temp and moisture
-    ggplot(site, mapping = aes(x = mean(as.numeric(soilMoisture)), y = mean(as.numeric(soilTemp)) + 
-      geom_point() + 
-      theme(axis.text.x = element_text(angle=45)) +
-      ggtitle("Temperature and Moisture Relationship")
-
-    
- 
+    varone = soilT
+    if(input$var1 == "soilInCaClpH") {
+      varone = soilP
+    } else if(input$var1 == "soilMoisture") {
+      varone = soilM
+    }
+    vartwo = soilM
+    if(input$var2 == "soilInCaClpH") {
+      vartwo = soilP
+    } 
+    else if(input$var2 == "soilTemperature") {
+      vartwo = soilT
+    }
   
-    ))
-    
-  })
 
-  output$no <-renderPlot ({
+  g1 <- ggplot(site, aes(x=soilT, y=soilM, color = siteID, label = siteID)) + 
+    geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+    xlim(c(0, 4)) +
+    ylim(c(0, 30)) +
+    ggtitle('Soil Moisture x Temperatue Forested Plots')
+  g1
+  })
+  
+  output$no <- renderPlot({
     site = soilFieldChem
-    if(input$siteType == "All Sites") {
-      site =  soilFieldChem
-    } else if(input$siteType == "Forrested Sites") {
-      site = forest %>% filter(decimalLatitude>-140)
-    } else if(input$siteType == "Grassland Sites") {
+    if(input$siteType1 == "All Sites") {
+      site = soilFieldChem
+    } else if(input$siteType1 == "Forrested Sites") {
+      site = forest
+    } else if(input$siteType1 == "Grassland Sites") {
       site = grass
     }
-
-
-    ggplot( site,  aes(x = decimalLongitude, y = decimalLatitude, size=100))+
+    soilFieldChema <- soilFieldChem 
+    ggplot(site,  aes(x = Longitude, y = Latitude, size=100))+
       borders("state", colour = "white", fill = "grey90") +
-      geom_point(aes(x = decimalLongitude, y = decimalLatitude, size=100),stroke=F, alpha=0.7) +
-     
+      geom_point(aes(x = Longitude, y = Latitude, size=100),stroke=F, alpha=0.7) +
+      
       # Cleaning up the graph
       
       theme_void() + 
@@ -155,10 +149,7 @@ server <- function(input, output) {
         legend.background = element_rect(fill = "#ffffff", color = NA)
       ) +
       coord_fixed(ratio=1.5)
-    
-    
-})
-
+  })
 }
 
 # Create Shiny app objects from either an explicit UI/server pair
