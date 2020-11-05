@@ -55,7 +55,10 @@ ui <- fluidPage(
       tabPanel("2 Variable",plotOutput("both")),
       tabPanel("map", plotOutput("no"))
 )
-)
+),
+  footer(
+    img(src='NEON.png', align = "left"),
+    )
 )
 
 server <- function(input, output) {
