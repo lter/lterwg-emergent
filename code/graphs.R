@@ -199,7 +199,7 @@ server <- function(input, output) {
   })
   
   output$no <- renderPlotly({
-    site = soilFieldChem
+    site = soilFieldChem 
     if(input$siteType1 == "All Sites") {
       site = soilFieldChem
     } else if(input$siteType1 == "Forrested Sites") {
@@ -211,10 +211,10 @@ server <- function(input, output) {
   
 p <- ggplot(data=site,  aes(x = Longitude, y = Latitude))+
       borders("state", colour = "white", fill = "grey90") +
-      geom_point(aes(x = Longitude, y = Latitude,  size=10, text=c(siteID), color=siteID),stroke=F, alpha=0.7) +
+      geom_point(aes(x = Longitude, y = Latitude,  size=10, text=paste("Site ID: ", siteID, "<br> Latitude: ", Latitude, "<br> Longitude: ", Longitude), color=siteID),stroke=F, alpha=0.7) +
       theme_void() + 
       guides( colour = guide_legend()) +
-      labs(title = "") +
+      labs(title = "Sites") +
       theme(
         legend.position = "bottom",
         text = element_text(color = "#22211d"),
@@ -223,7 +223,7 @@ p <- ggplot(data=site,  aes(x = Longitude, y = Latitude))+
         legend.background = element_rect(fill = "#ffffff", color = NA)
       ) +
       coord_fixed(ratio=1.5)
-p <- ggplotly(p)
+p <- ggplotly(p, tooltip="text")
 p
 
   })
