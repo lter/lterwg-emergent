@@ -61,9 +61,9 @@ ui <- fluidPage(
   titlePanel("Neon Graphs"),
   sidebarPanel(
     conditionalPanel(condition="input.conditionedPanels== 'BoxPlot' ", selectInput("siteType", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
-                     selectInput("tempmoist", "Select Either Temperature or Moisture", choices = c("Temperature", "Moisture"))),
+                     selectInput("tempmoist", "Select Either Temperature or Moisture", choices = c("Temperature", "Moisture", "soilInCaClpH"))),
     conditionalPanel(condition="input.conditionedPanels== '2 Variable' ", selectInput("var1", "Select variable 1", choices = c("soilMoisture", "soilTemp", "soilInCaClpH")),
-                     selectInput("var2", "Select variable 2", choices = c("soilMoisture", "soilTemp", "soilInCaClpH")), selectInput("siteType2", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites"))),
+                     selectInput("var2", "Select variable 2", choices = c("soilTemp","soilMoisture",  "soilInCaClpH")), selectInput("siteType2", "Select Site Type", choices = c("Forrested Sites","All Sites",  "Grassland Sites"))),
     conditionalPanel(condition="input.conditionedPanels == 'map' ", selectInput("siteType1", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")))
     
     
@@ -71,9 +71,9 @@ ui <- fluidPage(
   mainPanel (
   tabsetPanel(
     id="conditionedPanels",
-      tabPanel("BoxPlot", plotOutput("boxplot")),
-      tabPanel("2 Variable",plotOutput("both")),
-      tabPanel("map", plotOutput("no"))
+      tabPanel("BoxPlot", plotOutput("boxplot", width = "100%", height = "800px")),
+      tabPanel("2 Variable",plotOutput("both", width = "100%", height = "800px")),
+      tabPanel("map", plotlyOutput("no", width = "100%", height = "800px"))
 )
 ),
 fluidRow(
@@ -110,6 +110,13 @@ server <- function(input, output) {
         theme(axis.text.x = element_text(angle=45)) +
         ggtitle(input$siteType)
     }
+    else {
+      ggplot(soilFieldPh, mapping = aes(x = siteID, y = soilInCaClpH)) + 
+      geom_boxplot() + 
+      ylim(c(0, 10)) +
+      theme(axis.text.x = element_text(angle=45)) +
+      ggtitle(input$siteType)
+    }
   })
   
   #plotting the relationship for temp and moisture based on the siteID
@@ -129,8 +136,6 @@ server <- function(input, output) {
       if(input$var2 == "soilMoisture") {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilMoisture, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          xlim(c(0, 4)) +
-          ylim(c(0, 30)) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
       }
@@ -138,16 +143,12 @@ server <- function(input, output) {
       else if (input$var2 == "soilTemp") {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilTemp, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          xlim(c(0, 4)) +
-          ylim(c(0, 30)) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
       }
       else {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilInCaClpH, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          xlim(c(0, 4)) +
-          ylim(c(0, 30)) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
       }
@@ -156,8 +157,6 @@ server <- function(input, output) {
       if(input$var2 == "soilMoisture") {
         g1 <- ggplot(site, aes(x=soilMoisture, y=soilMoisture, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          xlim(c(0, 4)) +
-          ylim(c(0, 30)) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
       }
@@ -165,16 +164,12 @@ server <- function(input, output) {
     else if (input$var2 == "soilTemp") {
       g1 <- ggplot(site, aes(x=soilMoisture, y=soilTemp, color = siteID, label = siteID)) + 
         geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-        xlim(c(0, 4)) +
-        ylim(c(0, 30)) +
         ggtitle('Soil Moisture x Temperatue Forested Plots')
       g1
     }
     else {
       g1 <- ggplot(site, aes(x=soilMoisture, y=soilInCaClpH, color = siteID, label = siteID)) + 
         geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-        xlim(c(0, 4)) +
-        ylim(c(0, 10)) +
         ggtitle('Soil Moisture x Temperatue Forested Plots')
       g1
     }
@@ -183,8 +178,6 @@ server <- function(input, output) {
       if(input$var2 == "soilMoisture") {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilMoisture, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          xlim(c(2, 6)) +
-          ylim(c(0, 25)) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
       }
@@ -192,16 +185,12 @@ server <- function(input, output) {
       else if (input$var2 == "soilTemp") {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilTemp, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          xlim(c(2, 10)) +
-          ylim(c(0, 50)) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
       }
       else {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilInCaClpH, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          xlim(c(2, 10)) +
-          ylim(c(0, 10)) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
       }
@@ -209,7 +198,7 @@ server <- function(input, output) {
 
   })
   
-  output$no <- renderPlot({
+  output$no <- renderPlotly({
     site = soilFieldChem
     if(input$siteType1 == "All Sites") {
       site = soilFieldChem
@@ -219,9 +208,10 @@ server <- function(input, output) {
       site = grass
     }
     soilFieldChema <- soilFieldChem 
-ggplot(site,  aes(x = Longitude, y = Latitude, size=100))+
+  
+p <- ggplot(data=site,  aes(x = Longitude, y = Latitude))+
       borders("state", colour = "white", fill = "grey90") +
-      geom_point(aes(x = Longitude, y = Latitude,  size=100, text='HI', color=siteID),stroke=F, alpha=0.7) +
+      geom_point(aes(x = Longitude, y = Latitude,  size=10, text=c(siteID), color=siteID),stroke=F, alpha=0.7) +
       theme_void() + 
       guides( colour = guide_legend()) +
       labs(title = "") +
@@ -233,7 +223,8 @@ ggplot(site,  aes(x = Longitude, y = Latitude, size=100))+
         legend.background = element_rect(fill = "#ffffff", color = NA)
       ) +
       coord_fixed(ratio=1.5)
-
+p <- ggplotly(p)
+p
 
   })
 }
