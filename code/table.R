@@ -24,8 +24,6 @@ ui <- fluidPage(
                                                   choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'mixedForest' ),
                                       selectInput("selection2", label = h3("Select siteID"), 
                                                   choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
-                                      selectInput("selection4", label = h3("Select biophysicalCriteria"), 
-                                                  choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria)), selected = 'OK - no known exceptions'),
                                       selectInput("selection5", label = h3("Select sampleTiming"), 
                                                   choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='peakGreenness'),
                                       downloadButton("downloadData", "Download")
@@ -41,16 +39,13 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   tab <- reactive({ 
-    
     soilFieldChem <- soilFieldChem %>% 
       filter(nlcdClass == input$selection1) %>% 
       filter(siteID == input$selection2) %>%
-      filter(biophysicalCriteria == input$selection4) %>%
       filter(sampleTiming == input$selection5 )
-    
-    
-    
   })
+  
+  
   output$table <-DT::renderDataTable({
     DT::datatable(tab(),filter = "top", 
                   extensions = 'Buttons', options = list(dom = 'Bfrtip',    buttons = list(
