@@ -27,7 +27,8 @@ ui <- fluidPage(
                                       selectInput("selection4", label = h3("Select biophysicalCriteria"), 
                                                   choices = c("choose" = "", levels(soilFieldChem$biophysicalCriteria)), selected = 'OK - no known exceptions'),
                                       selectInput("selection5", label = h3("Select sampleTiming"), 
-                                                  choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='peakGreenness')
+                                                  choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='peakGreenness'),
+                                      downloadButton("downloadData", "Download")
                          )
                          
                          
@@ -75,6 +76,15 @@ server <- function(input, output) {
     )
     
   }) 
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("NeonDataTable", ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(tab(), file)
+    }
+  )
 }
 
 shinyApp(ui = ui, server = server)  
