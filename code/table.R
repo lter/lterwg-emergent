@@ -47,7 +47,7 @@ server <- function(input, output) {
       filter(biophysicalCriteria == input$selection4) %>%
       filter(sampleTiming == input$selection5 )
     
-
+    
     
   })
   output$table <-DT::renderDataTable({
@@ -73,10 +73,9 @@ server <- function(input, output) {
                   )
                   )
     )
-
- }) 
+    
+  }) 
 }
-  
+
 shinyApp(ui = ui, server = server)  
-  
-  
+
