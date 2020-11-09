@@ -31,7 +31,13 @@ ui <- fluidPage(
                          
                          
                 ),
-                mainPanel(DT::dataTableOutput("table"))
+                mainPanel(
+                  DT::dataTableOutput("table"),
+                  img(src = "LTER-logo.png", height = "25%", width = "25%", align = "left"),
+                  img(src = "NCEAS-logo.png", height = "20%", width = "20%", align = "left"),
+                  img(src = "neon_banner.png", height = "25%", width = "25%", align = "left"),
+                  img(src = "soil_emergent3.png", height = "25%", width = "25%", align = "left")
+                )
   )
 )
 

@@ -69,17 +69,17 @@ ui <- fluidPage(
     
     ),
   mainPanel (
-  tabsetPanel(
-    id="conditionedPanels",
-      tabPanel("BoxPlot", plotOutput("boxplot", width = "100%", height = "800px")),
-      tabPanel("2 Variable",plotOutput("both", width = "100%", height = "800px")),
-      tabPanel("map", plotlyOutput("no", width = "100%", height = "800px"))
-)
-),
-fluidRow(
-  print("hi"),
-  img(src='https://lternet.edu/wp-content/themes/ndic/library/images/logo.svg', align='left')
-)
+    tabsetPanel(
+      id="conditionedPanels",
+        tabPanel("BoxPlot", plotOutput("boxplot", width = "100%", height = "800px")),
+        tabPanel("2 Variable",plotOutput("both", width = "100%", height = "800px")),
+        tabPanel("map", plotlyOutput("no", width = "100%", height = "800px"))
+    ),
+    img(src = "LTER-logo.png", height = "25%", width = "25%", align = "left"),
+    img(src = "NCEAS-logo.png", height = "20%", width = "20%", align = "left"),
+    img(src = "neon_banner.png", height = "25%", width = "25%", align = "left"),
+    img(src = "soil_emergent3.png", height = "25%", width = "25%", align = "left")
+  )
 )
 
 
