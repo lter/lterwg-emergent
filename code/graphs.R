@@ -63,8 +63,16 @@ ui <- fluidPage(
     conditionalPanel(condition="input.conditionedPanels== 'BoxPlot' ", selectInput("siteType", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
                      selectInput("tempmoist", "Select Either Temperature or Moisture", choices = c("Temperature", "Moisture", "soilInCaClpH"))),
     conditionalPanel(condition="input.conditionedPanels== '2 Variable' ", selectInput("var1", "Select variable 1", choices = c("soilMoisture", "soilTemp", "soilInCaClpH")),
-                     selectInput("var2", "Select variable 2", choices = c("soilTemp","soilMoisture",  "soilInCaClpH")), selectInput("siteType2", "Select Site Type", choices = c("Forrested Sites","All Sites",  "Grassland Sites"))),
-    conditionalPanel(condition="input.conditionedPanels == 'map' ", selectInput("siteType1", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")))
+                     selectInput("var2", "Select variable 2", choices = c("soilTemp","soilMoisture",  "soilInCaClpH")),
+                     checkboxInput("siteIDCheck", "Show Site ID", value = FALSE), selectInput("siteType2", "Select Site Type", choices = c("Forrested Sites","All Sites",  "Grassland Sites"))),
+    conditionalPanel(condition="input.conditionedPanels == 'map' ", selectInput("siteType1", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
+                     
+                     selectInput("sampleTime", "Select Sample Timing", choices = c("All Options","winterSpringTransition
+", "other","peakGreenness
+","fallWinterTransition
+")),sliderInput("MinTemp", ("Input lowest Temp"),min=0, max=100, 
+                               value = 10), sliderInput("minSoil", ("Input lowest soil moisture"), min=0, max=100, 
+                                                        value = 10) )
     
     
     ),
@@ -106,14 +114,14 @@ server <- function(input, output) {
     } else if(input$tempmoist == "Moisture") {
       ggplot(site, mapping = aes(x = siteID, y = mean_soilMoisture)) + 
         geom_boxplot() + 
-        ylim(c(0, 10)) +
+        ylim(c(0, 7.5)) +
         theme(axis.text.x = element_text(angle=45)) +
         ggtitle(input$siteType)
     }
     else {
       ggplot(soilFieldPh, mapping = aes(x = siteID, y = soilInCaClpH)) + 
       geom_boxplot() + 
-      ylim(c(0, 10)) +
+      ylim(c(1, 10)) +
       theme(axis.text.x = element_text(angle=45)) +
       ggtitle(input$siteType)
     }
@@ -134,65 +142,140 @@ server <- function(input, output) {
   
     if(input$var1 == "soilInCaClpH") {
       if(input$var2 == "soilMoisture") {
+        if(input$siteIDCheck == TRUE){
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilMoisture, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          ggtitle('Soil Moisture x Temperatue Forested Plots')
+          ggtitle('Soil Moisture x Calcium Chloride in Soil')
         g1
+        }
+        else {
+          g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilMoisture, color = siteID)) + 
+            geom_point() +
+            ggtitle('Soil Moisture x Calcium Chloride in Soil')
+          g1
+        }
       }
   
       else if (input$var2 == "soilTemp") {
+        if(input$siteIDCheck == TRUE) {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilTemp, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          ggtitle('Soil Moisture x Temperatue Forested Plots')
+          ggtitle('Soil Moisture x Soil Temperature')
         g1
+        }
+        else {
+          g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilTemp, color = siteID)) + 
+            geom_point() + 
+            ggtitle('Soil Moisture x Soil Temperature')
+          g1
+        }
       }
       else {
+        if(input$siteIDCheck == TRUE) {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilInCaClpH, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
+        }
+        else {
+          g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilInCaClpH, color = siteID)) + 
+            geom_point() + 
+            ggtitle('Soil Moisture x Temperatue Forested Plots')
+          g1
+        }
       }
   }
    else if(input$var1 == "soilMoisture") {
       if(input$var2 == "soilMoisture") {
-        g1 <- ggplot(site, aes(x=soilMoisture, y=soilMoisture, color = siteID, label = siteID)) + 
+        if(input$siteIDCheck == TRUE) {
+        g1 <- ggplot(site, aes(x=soilMoisture, y=soilMoisture, color = siteID, label=siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
           ggtitle('Soil Moisture x Temperatue Forested Plots')
         g1
+        }
+        else {
+          g1 <- ggplot(site, aes(x=soilMoisture, y=soilMoisture, color = siteID)) + 
+            geom_point() +
+            ggtitle('Soil Moisture x Temperatue Forested Plots')
+          g1
+        }
       }
       
     else if (input$var2 == "soilTemp") {
+      if(input$siteIDCheck == TRUE) {
       g1 <- ggplot(site, aes(x=soilMoisture, y=soilTemp, color = siteID, label = siteID)) + 
         geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-        ggtitle('Soil Moisture x Temperatue Forested Plots')
+        ggtitle('Soil Moisture x Temperature')
       g1
+      }
+      else {
+        g1 <- ggplot(site, aes(x=soilMoisture, y=soilTemp, color = siteID)) + 
+          geom_point() +
+          ggtitle('Soil Moisture x Temperature')
+        g1
+      }
     }
     else {
+      if(input$siteIDCheck == TRUE) {
       g1 <- ggplot(site, aes(x=soilMoisture, y=soilInCaClpH, color = siteID, label = siteID)) + 
         geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-        ggtitle('Soil Moisture x Temperatue Forested Plots')
+        ggtitle('Soil Moisture x Calcium Chloride in Soil')
       g1
+      }
+      else {
+        g1 <- ggplot(site, aes(x=soilMoisture, y=soilInCaClpH, color = siteID)) + 
+          geom_point() +
+          ggtitle('Soil Moisture x Calcium Chloride in Soil')
+        g1
+      }
     }
   }
     else if(input$var1 == "soilInCaClpH") {
       if(input$var2 == "soilMoisture") {
+        if(input$siteIDCheck == TRUE) {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilMoisture, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          ggtitle('Soil Moisture x Temperatue Forested Plots')
+          ggtitle('Soil Moisture x Calcium Chloride in Soil')
         g1
+        }
+        else {
+          g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilMoisture, color = siteID)) + 
+            geom_point() +
+            ggtitle('Soil Moisture x Calcium Chloride in Soil')
+          g1
+        }
       }
       
       else if (input$var2 == "soilTemp") {
+        if(input$siteIDCheck == TRUE) {
         g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilTemp, color = siteID, label = siteID)) + 
           geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          ggtitle('Soil Moisture x Temperatue Forested Plots')
+          ggtitle('Soil Temperature x Calcium Chloride in Soil')
         g1
+        }
+        else {
+          g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilTemp, color = siteID)) + 
+            geom_point() +
+            ggtitle('Soil Temperature x Calcium Chloride in Soil')
+          g1
+          
+        }
       }
       else {
-        g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilInCaClpH, color = siteID, label = siteID)) + 
-          geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
-          ggtitle('Soil Moisture x Temperatue Forested Plots')
-        g1
+        if(input$siteIDCheck == TRUE) {
+          
+          g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilInCaClpH, color = siteID)) + 
+            geom_point() + 
+            ggtitle('Soil Moisture x Temperatue Forested Plots')
+          g1
+
+        }
+        else {
+          g1 <- ggplot(site, aes(x=soilInCaClpH, y=soilInCaClpH, color = siteID)) + 
+            geom_point() +
+            ggtitle('Error')
+          g1
+        }
       }
     }
 
@@ -201,17 +284,26 @@ server <- function(input, output) {
   output$no <- renderPlotly({
     site = soilFieldChem 
     if(input$siteType1 == "All Sites") {
-      site = soilFieldChem
+      site = soilFieldChem 
     } else if(input$siteType1 == "Forrested Sites") {
       site = forest 
     } else if(input$siteType1 == "Grassland Sites") {
       site = grass
     }
-    soilFieldChema <- soilFieldChem 
-  
-p <- ggplot(data=site,  aes(x = Longitude, y = Latitude))+
+    if(input$sampleTime == "All Options") {
+      soilFieldChema <- filter(site, soilTemp > input$MinTemp, soilMoisture > input$minSoil)
+    }
+    else if (input$sampleTime == "winterSpringTransition") {
+      soilFieldChema <- filter(site, sampleTiming == "winterSpringTransition", soilTemp > input$MinTemp, soilMoisture > input$minSoil)
+    }
+    else {
+      soilFieldChema <- filter(site, sampleTiming == input$sampleTime, soilTemp > input$MinTemp, soilMoisture > input$minSoil)
+    }
+    
+    print(soilFieldChem)
+p <- ggplot(data=soilFieldChema,  aes(x = Longitude, y = Latitude))+
       borders("state", colour = "white", fill = "grey90") +
-      geom_point(aes(x = Longitude, y = Latitude,  size=10, text=paste("Site ID: ", siteID, "<br> Latitude: ", Latitude, "<br> Longitude: ", Longitude), color=siteID),stroke=F, alpha=0.7) +
+      geom_point(aes(x = Longitude, y = Latitude,  size=10, text=paste("Site ID: ", siteID, "<br> Latitude: ", Latitude, "<br> Longitude: ", Longitude), color=nlcdClass),stroke=F, alpha=0.7) +
       theme_void() + 
       guides( colour = guide_legend()) +
       labs(title = "Sites") +
