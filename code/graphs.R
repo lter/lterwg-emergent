@@ -83,8 +83,6 @@ ui <- fluidPage(
       tabPanel("2 Variable",plotOutput("both", width = "100%", height = "800px")),
       tabPanel("map", plotlyOutput("no", width = "100%", height = "800px"))
     ),
-    img(src = "LTER-logo.png", height = "25%", width = "25%", align = "left"),
-    img(src = "NCEAS-logo.png", height = "20%", width = "20%", align = "left"),
     img(src = "neon_banner.png", height = "25%", width = "25%", align = "left"),
     img(src = "soil_emergent3.png", height = "25%", width = "25%", align = "left")
   )

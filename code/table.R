@@ -5,7 +5,7 @@
 #The dplyr and readr libraries are used to help read in the data. 
 #The DT library is used for the datatables
 library(plotly)
-library(ggplot2)
+#library(ggplot2)
 library(shiny)
 library(dplyr)
 library(readr)
@@ -15,6 +15,9 @@ library(shinyWidgets)
 #Loading in the csv file
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 soilFieldChem <- soilFieldChem[-c(72:113)]
+soilFieldChem$collectDate.x <- as.Date(soilFieldChem$collectDate.x, format = "%m/%d/%Y")
+mindate<- min(soilFieldChem$collectDate.x)
+maxdate <- max(soilFieldChem$collectDate.x)
 
 ui <- fluidPage(
   titlePanel("Neon Data Table"),
@@ -26,6 +29,8 @@ ui <- fluidPage(
                                                   choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
                                       selectInput("selection5", label = h3("Select sampleTiming"), 
                                                   choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='peakGreenness'),
+                                      sliderInput("date_slider", label = h3("Date Range"), min = mindate, 
+                                                  max = maxdate, value = c(mindate, maxdate)),
                                       downloadButton("downloadData", "Download")
                          )
                          
@@ -33,8 +38,6 @@ ui <- fluidPage(
                 ),
                 mainPanel(
                   DT::dataTableOutput("table"),
-                  img(src = "LTER-logo.png", height = "25%", width = "25%", align = "left"),
-                  img(src = "NCEAS-logo.png", height = "20%", width = "20%", align = "left"),
                   img(src = "neon_banner.png", height = "25%", width = "25%", align = "left"),
                   img(src = "soil_emergent3.png", height = "25%", width = "25%", align = "left")
                 )
@@ -45,10 +48,13 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   tab <- reactive({ 
-    soilFieldChem <- soilFieldChem %>% 
+    soilFieldChem <- soilFieldChem %>%
       filter(nlcdClass == input$selection1) %>% 
       filter(siteID == input$selection2) %>%
-      filter(sampleTiming == input$selection5 )
+      filter(sampleTiming == input$selection5 ) %>%
+      filter(collectDate.x >= input$date_slider[1] & collectDate.x <= input$date_slider[2]) %>%
+      filter(!is.na(geneticArchiveSample1ID) | !is.na(geneticArchiveSample2ID) | !is.na(geneticArchiveSample3ID) | 
+             !is.na(geneticArchiveSample4ID) | !is.na(geneticArchiveSample5ID))
   })
   
   
