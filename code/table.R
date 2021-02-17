@@ -61,10 +61,10 @@ server <- function(input, output) {
   output$table <-DT::renderDataTable({
     DT::datatable(tab(),filter = "top", 
                   extensions = 'Buttons', options = list(dom = 'Bfrtip',    buttons = list(
-                    list(
-                      extend = 'colvis', 
-                      columns = c(0,10:30,31:70)
-                    ),
+                    #list(
+                     # extend = 'colvis', 
+                      #columns = c(0,10:30,31:70)
+                    #),
                     list(
                       extend = 'colvisGroup', 
                       text = "Show all",
