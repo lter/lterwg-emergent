@@ -5,7 +5,6 @@
 #The dplyr and readr libraries are used to help read in the data. 
 #The DT library is used for the datatables
 library(plotly)
-library(ggplot2)
 library(shiny)
 library(dplyr)
 library(readr)
@@ -15,17 +14,26 @@ library(shinyWidgets)
 #Loading in the csv file
 soilFieldChem <- read.csv(file = 'soilFieldChem.csv')
 soilFieldChem <- soilFieldChem[-c(72:113)]
+nTransData <- read.csv(file = 'sls_nTransData_20210206.csv')
+truncated_nTransData <- nTransData[ , c("sampleID","kclAmmoniumNConc", "ammoniumNRepNum","kclNitrateNitriteNConc")]
+df <- soilFieldChem %>% right_join(truncated_nTransData, by = "sampleID")
+df <- df[!is.na(df$collectDate.x),]
+df$collectDate.x <- as.Date(df$collectDate.x, format = "%m/%d/%Y")
+mindate<- min(df$collectDate.x)
+maxdate <- max(df$collectDate.x)
 
 ui <- fluidPage(
   titlePanel("Neon Data Table"),
   sidebarLayout(position = "left",
                 tabPanel("Table",
                          sidebarPanel(selectInput("selection1", label = h3("Select nlcdClass"), 
-                                                  choices =  c("choose" = "", levels(soilFieldChem$nlcdClass)), selected = 'mixedForest' ),
+                                                  choices =  c("choose" = "", levels(df$nlcdClass)), selected = 'mixedForest' ),
                                       selectInput("selection2", label = h3("Select siteID"), 
-                                                  choices = c("choose" = "", levels(soilFieldChem$siteID)), selected = 'BART'),
+                                                  choices = c("choose" = "", levels(df$siteID)), selected = 'BART'),
                                       selectInput("selection5", label = h3("Select sampleTiming"), 
-                                                  choices = c("choose" = "", levels(soilFieldChem$sampleTiming)), selected='peakGreenness'),
+                                                  choices = c("choose" = "", levels(df$sampleTiming)), selected='peakGreenness'),
+                                      sliderInput("date_slider", label = h3("Date Range"), min = mindate, 
+                                                  max = maxdate, value = c(mindate, maxdate)),
                                       downloadButton("downloadData", "Download")
                          )
                          
@@ -33,8 +41,6 @@ ui <- fluidPage(
                 ),
                 mainPanel(
                   DT::dataTableOutput("table"),
-                  img(src = "LTER-logo.png", height = "25%", width = "25%", align = "left"),
-                  img(src = "NCEAS-logo.png", height = "20%", width = "20%", align = "left"),
                   img(src = "neon_banner.png", height = "25%", width = "25%", align = "left"),
                   img(src = "soil_emergent3.png", height = "25%", width = "25%", align = "left")
                 )
@@ -45,20 +51,23 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   tab <- reactive({ 
-    soilFieldChem <- soilFieldChem %>% 
+    df <- df %>%
       filter(nlcdClass == input$selection1) %>% 
       filter(siteID == input$selection2) %>%
-      filter(sampleTiming == input$selection5 )
+      filter(sampleTiming == input$selection5 ) %>%
+      filter(collectDate.x >= input$date_slider[1] & collectDate.x <= input$date_slider[2]) %>%
+      filter(!is.na(geneticArchiveSample1ID) | !is.na(geneticArchiveSample2ID) | !is.na(geneticArchiveSample3ID) | 
+             !is.na(geneticArchiveSample4ID) | !is.na(geneticArchiveSample5ID))
   })
   
   
   output$table <-DT::renderDataTable({
     DT::datatable(tab(),filter = "top", 
                   extensions = 'Buttons', options = list(dom = 'Bfrtip',    buttons = list(
-                    list(
-                      extend = 'colvis', 
-                      columns = c(0,10:30,31:70)
-                    ),
+                    #list(
+                     # extend = 'colvis', 
+                      #columns = c(0,10:30,31:70)
+                    #),
                     list(
                       extend = 'colvisGroup', 
                       text = "Show all",
@@ -71,7 +80,7 @@ server <- function(input, output) {
                     )
                   ),
                   columnDefs = list(
-                    list(targets = c(0,10:30,31:71), visible = FALSE)
+                    list(targets = c(0,10:30,31:75), visible = FALSE)
                   )
                   )
     )
