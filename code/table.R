@@ -29,7 +29,7 @@ ui <- fluidPage(
                          sidebarPanel(selectInput("selection1", label = h3("Select nlcdClass"), 
                                                   choices =  c("choose" = "", levels(df$nlcdClass)), selected = 'mixedForest' ),
                                       selectInput("selection2", label = h3("Select siteID"), 
-                                                  choices = c("choose" = "", levels(df$siteID)), selected = 'BART'),
+                                                  choices = c("choose" = "", levels(df$siteID)), selected = 'HARV'),
                                       selectInput("selection5", label = h3("Select sampleTiming"), 
                                                   choices = c("choose" = "", levels(df$sampleTiming)), selected='peakGreenness'),
                                       sliderInput("date_slider", label = h3("Date Range"), min = mindate, 
