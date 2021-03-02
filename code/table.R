@@ -36,8 +36,6 @@ ui <- fluidPage(
                                                   max = maxdate, value = c(mindate, maxdate)),
                                       downloadButton("downloadData", "Download")
                          )
-                         
-                         
                 ),
                 mainPanel(
                   DT::dataTableOutput("table"),
