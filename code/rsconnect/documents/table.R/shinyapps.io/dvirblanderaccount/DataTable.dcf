@@ -1,0 +1,13 @@
+name: DataTable
+title: DataTable
+username:
+account: dvirblanderaccount
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3731384
+bundleId: 4301194
+url: https://dvirblanderaccount.shinyapps.io/DataTable/
+when: 1614880201.21121
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|copy_merge.R|EMERGENT Shiny.Rmd|graphs.R|merged_tables.csv|Nayfach_S1.csv|Nayfach_S4.csv|shiny.pdf|soilDataAnalysis.Rmd|soilFieldPh.csv|soilMetagenomicsDataAnalysis_edJLB.html|soilMetagenomicsDataAnalysis_edJLB.Rmd|soilMetagenomicsDataAnalysis.Rmd|test2.csv

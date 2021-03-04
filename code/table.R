@@ -4,7 +4,6 @@
 #The shiny library is used because this is a shiny app.
 #The dplyr and readr libraries are used to help read in the data. 
 #The DT library is used for the datatables
-library(plotly)
 library(shiny)
 library(dplyr)
 library(readr)
@@ -19,6 +18,10 @@ truncated_nTransData <- nTransData[ , c("sampleID","kclAmmoniumNConc", "ammonium
 df <- soilFieldChem %>% right_join(truncated_nTransData, by = "sampleID")
 df <- df[!is.na(df$collectDate.x),]
 df$collectDate.x <- as.Date(df$collectDate.x, format = "%m/%d/%Y")
+df$nlcdClass <- as.factor(df$nlcdClass)
+df$siteID <- as.factor(df$siteID)
+df$sampleTiming <- as.factor(df$sampleTiming)
+datatable <- df
 mindate<- min(df$collectDate.x)
 maxdate <- max(df$collectDate.x)
 
@@ -49,7 +52,7 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   tab <- reactive({ 
-    df <- df %>%
+    df <- datatable %>%
       filter(nlcdClass == input$selection1) %>% 
       filter(siteID == input$selection2) %>%
       filter(sampleTiming == input$selection5 ) %>%
