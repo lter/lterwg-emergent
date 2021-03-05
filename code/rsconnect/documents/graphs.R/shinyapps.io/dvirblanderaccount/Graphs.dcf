@@ -1,0 +1,13 @@
+name: Graphs
+title: Graphs
+username:
+account: dvirblanderaccount
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3736575
+bundleId: 4301477
+url: https://dvirblanderaccount.shinyapps.io/Graphs/
+when: 1614884886.14618
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|copy_merge.R|EMERGENT Shiny.Rmd|merged_tables.csv|Nayfach_S1.csv|Nayfach_S4.csv|shiny.pdf|soilDataAnalysis.Rmd|soilMetagenomicsDataAnalysis_edJLB.html|soilMetagenomicsDataAnalysis_edJLB.Rmd|soilMetagenomicsDataAnalysis.Rmd|table.R|test2.csv
