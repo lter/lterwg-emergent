@@ -62,11 +62,11 @@ soilP <- soilFieldPh %>%
 ui <- fluidPage(
   titlePanel("Neon Graphs"),
   sidebarPanel(
-    conditionalPanel(condition="input.conditionedPanels== 'BoxPlot' ", selectInput("siteType", "Select Site Type", choices = c("All Sites", "Forrested Sites", "Grassland Sites")),
+    conditionalPanel(condition="input.conditionedPanels== 'BoxPlot' ", selectInput("siteType", "Select Site Type", choices = c("All Sites", "Forested Sites", "Grassland Sites")),
                      selectInput("tempmoist", "Select Either Temperature or Moisture", choices = c("Temperature", "Moisture", "soilInCaClpH"))),
     conditionalPanel(condition="input.conditionedPanels== '2 Variable' ", selectInput("var1", "Select variable 1", choices = c("soilMoisture", "soilTemp", "soilInCaClpH")),
                      selectInput("var2", "Select variable 2", choices = c("soilTemp","soilMoisture",  "soilInCaClpH")),
-                     checkboxInput("siteIDCheck", "Show Site ID", value = FALSE), selectInput("siteType2", "Select Site Type", choices = c("Forrested Sites","All Sites",  "Grassland Sites"))),
+                     checkboxInput("siteIDCheck", "Show Site ID", value = FALSE), selectInput("siteType2", "Select Site Type", choices = c("Forested Sites","All Sites",  "Grassland Sites"))),
     conditionalPanel(condition="input.conditionedPanels == 'map' ", selectInput("siteType1", "Select ncldClass", choices = c("All Sites","deciduousForest","dwarfScrub","emergentHerbaceousWetlands","evergreenForest","grasslandHerbaceous","mixedForest","sedgeHerbaceous","shrubScrub","woodyWetlands")),
                      
                      selectInput("sampleTime", "Select Sample Timing", choices = c("All Options","winterSpringTransition
@@ -99,7 +99,7 @@ server <- function(input, output) {
     site = allsub
     if(input$siteType == "All Sites") {
       site = allsub
-    } else if(input$siteType == "Forrested Sites") {
+    } else if(input$siteType == "forested Sites") {
       site = forestsub
     } else if(input$siteType == "Grassland Sites") {
       site = grasssub
@@ -135,7 +135,7 @@ server <- function(input, output) {
     site = soilFieldPh
     if(input$siteType2 == "All Sites") {
       site = soilFieldPh
-    } else if(input$siteType2 == "Forrested Sites") {
+    } else if(input$siteType2 == "forested Sites") {
       site = Forestsub
     } else if(input$siteType2 == "Grassland Sites") {
       site = Grasssub
@@ -286,7 +286,8 @@ server <- function(input, output) {
     site = soilFieldChem 
     if(input$siteType1 == "All Sites") {
       site = soilFieldChem 
-    } else if(input$siteType1 == "Forrested Sites") {
+    } else if(input$siteType1 == "for
+ested Sites") {
       site = forest 
     } else if(input$siteType1 == "Grassland Sites") {
       site = grass
