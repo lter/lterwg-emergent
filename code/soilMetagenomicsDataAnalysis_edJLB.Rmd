@@ -25,10 +25,18 @@ library(ggrepel)
 library(neonUtilities)
 # install neonNtrans if needed
 # library(devtools) - needed for install_github
-# install_github("NEONScience/NEON-Nitrogen-Transformations/neonNTrans", dependencies=TRUE)  
+# install_github("NEONScience/NEON-Nitrogen-Transformations/neonNTrans", dependencies=TRUE) 
 library(neonNTrans)  
+# get neonstore data package
+# devtools::install_github("cboettig/neonstore")
+library(neonstore)
 
 ```
+
+
+# get neonstore data package
+# https://www.rdocumentation.org/packages/neonstore/versions/0.4.4
+
 
 ``` {r 'read data from Portal', message=FALSE, results='hide'}
 
@@ -37,7 +45,7 @@ soil_fieldL1 <- loadByProduct(dpID='DP1.10086.001', check.size = FALSE, package 
 soil_fieldBgc <- soil_fieldL1$sls_bgcSubsampling
 # remove unwanted fields
 soil_fieldBgc <- select(soil_fieldBgc, sampleID, cnSampleID, bgcArchiveID,   
-                        bgcSampleCondition=sampleCondition, bgcDataQF)
+                         bgcSampleCondition=sampleCondition, bgcDataQF)
 soil_fieldCore <- soil_fieldL1$sls_soilCoreCollection
 soil_fieldMoist <- soil_fieldL1$sls_soilMoisture
 soil_fieldPh <- soil_fieldL1$sls_soilpH
@@ -54,37 +62,40 @@ soilField <- left_join(soilField, soil_fieldBgc, by=c('sampleID') )
 
 
 # download soil chem and isotope data #
-soil_chemL1 <- loadByProduct(dpID='DP1.10078.001', check.size = FALSE,package = 'basic', site = 'all')
-soil_chem <- soil_chemL1$sls_soilChemistry %>%
+# soil_chemL1 <- loadByProduct(dpID='DP1.10078.001', check.size = FALSE,package = 'basic', site = 'all')
+# soil_chem <- soil_chemL1$sls_soilChemistry %>%
+soil_chem <- soil_fieldL1$sls_soilChemistry %>% 
   select(sampleID, cnSampleID, sampleType,acidTreatment, nitrogenPercent, organicCPercent,
          CNratio, cnPercentQF, percentAccuracyQF, analyticalRepNumber, cnRemarks=remarks,
          cnLaboratoryName=laboratoryName, cnTestMethod=testMethod, cnInstrument=instrument, 
          cnDataQF=dataQF)
 
-soil_isoL1 <- loadByProduct(dpID='DP1.10100.001', check.size = FALSE,package = 'basic', site = 'all')
-soil_iso <- soil_isoL1$sls_soilStableIsotopes %>%
-  select(sampleID, cnSampleID, d15N, organicd13C, cnIsotopeQF, isotopeAccuracyQF,
-         isoRemarks=remarks, isoLaboratoryName=laboratoryName, isoTestMethod=testMethod, 
-         isoInstrument=instrument, isoAnalyticalRepNumber=analyticalRepNumber,
-         isoDataQF=dataQF)
+# soil_isoL1 <- loadByProduct(dpID='DP1.10100.001', check.size = FALSE,package = 'basic', site = 'all')
+#soil_iso <- soil_fieldL1$bgc_CNiso_externalSummary %>%
+#  select(sampleID, cnSampleID, d15N, organicd13C, cnIsotopeQF, isotopeAccuracyQF,
+#         isoRemarks=remarks, isoLaboratoryName=laboratoryName, isoTestMethod=testMethod, 
+#         isoInstrument=instrument, isoAnalyticalRepNumber=analyticalRepNumber,
+#         isoDataQF=dataQF)
 
 # N transformation rate measurements
-soil_NtransL1 <- loadByProduct(dpID='DP1.10080.001', check.size = FALSE,package = 'basic', site = 'all')
-soilNtrans <- def.calc.ntrans(kclInt = soil_NtransL1$ntr_internalLab, 
-                       kclIntBlank = soil_NtransL1$ntr_internalLabBlanks, 
-                       kclExt = soil_NtransL1$ntr_externalLab, 
-                       soilMoist = soil_NtransL1$sls_soilMoisture, dropFlagged = TRUE)
+# soil_NtransL1 <- loadByProduct(dpID='DP1.10080.001', check.size = FALSE,package = 'basic', site = 'all')
+# soilNtrans <- def.calc.ntrans(kclInt = soil_NtransL1$ntr_internalLab, 
+#soilNtrans <- def.calc.ntrans(kclInt = soil_fieldL1$ntr_internalLab, 
+#                       kclIntBlank = soil_fieldL1$ntr_internalLabBlanks, 
+#                       kclExt = soil_fieldL1$ntr_externalLab, 
+#                       soilMoist = soil_fieldL1$sls_soilMoisture)
 # remove duplicate records
-soilNtransNoDupes <- soilNtrans[!duplicated(soilNtrans$sampleID), ]
+soilNtransNoDupes <- soilNtrans[!duplicated(soilNtrans$sampleID)]
 
 
 # join soil chem data tables: soil chem, soil isotopes, N transformation
-soilChem <- left_join(soil_chem, soil_iso, by=c('sampleID', 'cnSampleID'))
-soilChem <- left_join(soilChem, soilNtrans, by=c('sampleID'))
-
+# soilChem <- left_join(soil_chem, soil_iso, by=c('sampleID', 'cnSampleID'))
+# soilChem <- left_join(soilChem, soilNtrans, by=c('sampleID'))
+# soilChem <- left_join(soil_chem, soilNtrans, by=c('sampleID'))
 
 # join soil chem and field data tables
-soilFieldChem <- left_join(soilField, soilChem, by=c('sampleID', 'cnSampleID') )
+# soilFieldChem <- left_join(soilField, soilChem, by=c('sampleID', 'cnSampleID') )
+soilFieldChem <- left_join(soilField, soil_chem, by=c('sampleID', 'cnSampleID') )
 
 
 # download metagenomics data #
