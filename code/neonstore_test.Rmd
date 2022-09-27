@@ -1,0 +1,58 @@
+---
+title: "Soil Discrete Data Summary Generator"
+author: "Lee Stanish"
+date: "March 20, 2020"
+output: 
+    html_document:
+        toc: true
+        toc_float : true
+        keep_md: true
+---
+
+
+```{r 'load libraries', warning=FALSE, message=FALSE}
+options(stringsAsFactors = FALSE)
+
+library(devtools)
+library(plyr)
+library(dplyr)
+library(qdap)
+library(stringr)
+library(xtable)
+library(ggplot2)
+library(plotly)
+library(ggrepel)
+library(neonUtilities)
+# install neonNtrans if needed
+# library(devtools) - needed for install_github
+# install_github("NEONScience/NEON-Nitrogen-Transformations/neonNTrans", dependencies=TRUE) 
+library(neonNTrans)  
+# get neonstore data package
+# devtools::install_github("cboettig/neonstore")
+library(neonstore)
+library(httr)
+library(jsonlite)
+```
+
+
+```{r}
+req <- GET("http://data.neonscience.org/api/v0/products/DP1.10086.001")
+req
+```
+
+```{r}
+# Make the data readable by jsonlite
+req.text <- content(req, as="text")
+
+# Flatten json into a nested list
+avail <- jsonlite::fromJSON(req.text, 
+                            simplifyDataFrame=T, 
+                            flatten=T)
+
+# View description of data product
+avail$data$productDescription
+
+# View data product abstract
+avail$data$productAbstract
+```
+

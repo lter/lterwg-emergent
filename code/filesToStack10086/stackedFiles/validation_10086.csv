@@ -1,0 +1,313 @@
+table,fieldName,description,dataType,units,parserToCreate,entryValidationRulesParser,entryValidationRulesForm
+sls_soilCoreCollection,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+sls_soilCoreCollection,plotID,"Plot identifier (NEON site code_XXX)",string,NA,,"[NAMED_LOCATION_TYPE('OS Plot - bgc')]","[REQUIRE][NAMED_LOCATION_TYPE('OS plot - bgc')]"
+sls_soilCoreCollection,nTransBoutType,"Category of bout in relation to nitrogen transformation sample collection",string,NA,,"[LOV]","[REQUIRE][LOV][SUGGESTED_ENTRY(previousValue)]"
+sls_soilCoreCollection,samplingImpractical,"Samples and/or measurements were not collected due to the indicated circumstance",string,NA,,"[LOV]","[REQUIRE][LOV][SUGGESTED_ENTRY('OK')]"
+sls_soilCoreCollection,incubationMethod,"Method used for soil incubation",string,NA,,"[LOV]","[REQUIRE][LOV][IF(nTransBoutType != 'Tfinal'), DEFAULT_TO('no incubation')][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,incubationCondition,"Condition of incubated nitrogen transformation sample upon retrieval",string,NA,,"[LOV]","[LOV][IF(nTransBoutType != 'Tfinal'), HIDDEN)][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,boutType,"Type of analyses that will be conducted on samples collected during the bout",string,NA,,"[LOV]","[REQUIRE][LOV][SUGGESTED_ENTRY(previousValue)]"
+sls_soilCoreCollection,sampleTiming,"Timing of the sampling event with regard to the field season",string,NA,,"[LOV]","[REQUIRE][LOV][SUGGESTED_ENTRY(previousValue)]"
+sls_soilCoreCollection,eventID,"An identifier for the set of information associated with the event, which includes information about the place and time of the event",string,NA,,"[ASCII]","[EQUALS(siteID+'.'+sampleTiming+'.'+collectYear)]"
+sls_soilCoreCollection,biophysicalCriteria,"An indicator of whether sampling coincided with the intended biophysical conditions",string,NA,,"[LOV]","[LOV][REQUIRE]"
+sls_soilCoreCollection,standingWaterDepth,"Depth of standing water present at a sampling location",real,centimeter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(300)]","[IF(samplingImpractical = 'OK'), REQUIRE][SUGGESTED_ENTRY(0)][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(100)][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,subplotID,"Identifier for the NEON subplot",string,NA,,"[LOV]","[LOV][REQUIRE]"
+sls_soilCoreCollection,coreCoordinateX,"x location of the soil core relative to the SW corner",real,meter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(40)]","[IF(samplingImpractical = 'OK'), REQUIRE][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(40)][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,coreCoordinateY,"y location of the soil core relative to the SW corner",real,meter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(40)]","[IF(samplingImpractical = 'OK'), REQUIRE][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(40)][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,setDate,"Date that trap was set",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,"[IF(nTransBoutType != 'Tfinal'), DEFAULT_TO('collectDate')]"
+sls_soilCoreCollection,collectDate,"Date of the collection event",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,"[DATE_FORMAT(YYYYMMDDTHH:MM)]"
+sls_soilCoreCollection,toxicodendronPossible,"Indicator for whether a sample may contain Toxicodendron spp",string,NA,,"[LOV]","[LOV][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,soilTemp,"In-situ temperature of soil at approximately 10 cm depth",real,degree,,"[GREATER_THAN_OR_EQUAL_TO(20-)][IF SUBSTRING(plotID,1,4) IN ('SJER','JORN','SRER'), LESS_THAN_OR_EQUAL_TO(60)][IF !(SUBSTRING(plotID,1,4)IN('SJER','JORN','SRER')), LESS_THAN_OR_EQUAL_TO(40)]","[IF(standingWaterDepth=0),REQUIRE][IF(sampleFate !='lost), REQUIRE][GREATER_THAN_OR_EQUAL_TO(-20)][LESS_THAN_OR_EQUAL_TO(40)][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,litterDepth,"Depth of litter layer",real,centimeter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(1000)]","[IF(standingWaterDepth=0),REQUIRE][IF(sampleFate !='lost), REQUIRE][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(500)][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,sampleTopDepth,"Depth below the soil surface of the top of a soil sample",real,centimeter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(100)]","[IF(sampleFate !='lost), REQUIRE][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(100)][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,sampleBottomDepth,"Depth below the soil surface of the bottom of a soil sample",real,centimeter,,"[GREATER_THAN_OR_EQUAL_TO(sampleTopDepth)][LESS_THAN_OR_EQUAL_TO(100)]","[IF(sampleFate !='lost), REQUIRE][GREATER_THAN_OR_EQUAL_TO('sampleTopDepth')][LESS_THAN_OR_EQUAL_TO(100)][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,horizon,"Organic or mineral soil",string,NA,,"[LOV]","[LOV][IF(samplingImpractical = 'OK'), REQUIRE][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,sampleID,"Identifier for sample",string,NA,,"[DOES_NOT_EXIST][IF(samplingImpractical='OK'), MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF samplingImpractical = 'OK' & setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF samplingImpractical = 'OK' & setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])')]","[IF(samplingImpractical = 'OK'), DEFAULT_TO(plotID + horizon + coreCoordinateX + coreCoordinateY + collectDate)]"
+sls_soilCoreCollection,sampleFate,"Fate of a sample",string,NA,,"[LOV]","[IF(nTransBoutType != 'Tfinal'), HIDDEN)][LOV('active', 'lost')][IF(nTransBoutType = 'Tfinal', SUGGESTED_ENTRY('active')]"
+sls_soilCoreCollection,sampleCode,"Barcode of a sample",string,NA,,"[ASCII]",
+sls_soilCoreCollection,soilSamplingDevice,"Type of soil collection device used for sampling",string,NA,,"[LOV]","[LOV][IF(samplingImpractical = 'OK'), WARN][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,soilCoreCount,"Number of soil cores combined per sample",unsigned integer,number,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(10)]","[IF(samplingImpractical = 'OK'), WARN][IF(samplingImpractical != 'OK'), REQUIRE_NULL][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(10)]"
+sls_soilCoreCollection,sampleExtent,"Extent of the soil sample relative to the local soil horizon conditions",string,NA,,"[LOV]","[LOV][IF(samplingImpractical = 'OK'), WARN][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,samplingProtocolVersion,"The NEON document number and version where detailed information regarding the sampling method used is available; format NEON.DOC.######vX",string,NA,,"[LOV]","[LOV][REQUIRE][SUGGESTED_ENTRY(previousValue)]"
+sls_soilCoreCollection,geneticSampleID,"Identifier for the genetic sample",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)gen')]","[IF(boutType = 'microbesBiomass|microbesBiomassBGC' AND samplingImpractical = 'OK'), REQUIRE][IF(samplingImpractical!='OK'), REQUIRE_NULL][EQUALS(sampleID + '-gen')]"
+sls_soilCoreCollection,geneticSampleFate,"Fate of a genetic sample",string,NA,,"[IF (IS_NOT_BLANK(geneticSampleID)), REQUIRE][LOV]","[IF (IS_NOT_BLANK(geneticSampleID)), REQUIRE][IF(samplingImpractical!='OK', DEFAULT_TO(NULL))][SUGGESTED_ENTRY('active')][LOV('active','lost')]"
+sls_soilCoreCollection,geneticSampleCode,"Barcode of a genetic sample",string,NA,,"[ASCII]",
+sls_soilCoreCollection,geneticSampleCondition,"Condition of genetic sample storage or processing",string,NA,,"[LOV]","[IF(boutType = 'microbesBiomass|microbesBiomassBGC' AND samplingImpractical = 'OK'), REQUIRE][IF(samplingImpractical != 'OK'), REQUIRE_NULL][LOV][SUGGESTED_ENTRY('OK')]"
+sls_soilCoreCollection,geneticSamplePrepMethod,"Preparation or preservation method for a genetic sample",string,NA,,"[LOV]","[IF(boutType = 'microbesBiomass|microbesBiomassBGC' AND samplingImpractical = 'OK'), REQUIRE][IF(samplingImpractical != 'OK'), REQUIRE_NULL][LOV][SUGGESTED_ENTRY('dry ice')]"
+sls_soilCoreCollection,geneticArchiveSampleCount,"Number of subsamples collected for genetic archive",integer,number,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(5)]","[IF(boutType != 'field only' AND samplingImpractical = 'OK'), REQUIRE][IF(samplingImpractical!='OK'), REQUIRE_NULL][GREATER_THAN_OR_EQUAL_TO(1)][LESS_THAN_OR_EQUAL_TO(5)]"
+sls_soilCoreCollection,geneticArchiveSample1ID,"Identifier for genetic archive subsample 1",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)ga1')]","[IF(geneticArchiveSampleCount >= 1), EQUALS(sampleID + '-ga1')][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,geneticArchiveSample1Fate,"Fate of genetic archive subsample 1",string,NA,,"[IF (IS_NOT_BLANK(geneticArchiveSample1ID) OR IS_NOT_BLANK(geneticArchiveSample1Code)), REQUIRE][LOV]","[IF(boutType='microbes | microbesBGC | microbesBiomass | microbesBiomassBGC' AND samplingImpractical = 'OK'), SUGGESTED_ENTRY('active')][IF(geneticArchiveSampleCount>=1), REQUIRE][IF(samplingImpractical!='OK', DEFAULT_TO(NULL))][LOV('active','lost','consumed')]"
+sls_soilCoreCollection,geneticArchiveSample1Code,"Barcode of genetic archive subsample 1",string,NA,,"[ASCII]",
+sls_soilCoreCollection,geneticArchiveSample2ID,"Identifier for genetic archive subsample 2",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)ga2')]","[IF(geneticArchiveSampleCount >= 2), EQUALS(sampleID + '-ga2')][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,geneticArchiveSample2Fate,"Fate of genetic archive subsample 2",string,NA,,"[IF (IS_NOT_BLANK(geneticArchiveSample2ID) OR IS_NOT_BLANK(geneticArchiveSample2Code)), REQUIRE][LOV]","[IF(boutType='microbes | microbesBGC | microbesBiomass | microbesBiomassBGC' AND samplingImpractical = 'OK'), SUGGESTED_ENTRY('active')][IF(geneticArchiveSampleCount>=1), REQUIRE][IF(samplingImpractical!='OK', DEFAULT_TO(NULL))][LOV('active','lost','consumed')]"
+sls_soilCoreCollection,geneticArchiveSample2Code,"Barcode of genetic archive subsample 2",string,NA,,"[ASCII]",
+sls_soilCoreCollection,geneticArchiveSample3ID,"Identifier for genetic archive subsample 3",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)ga3')]","[IF(geneticArchiveSampleCount >= 3), EQUALS(sampleID + '-ga3')][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,geneticArchiveSample3Fate,"Fate of genetic archive subsample 3",string,NA,,"[IF (IS_NOT_BLANK(geneticArchiveSample3ID) OR IS_NOT_BLANK(geneticArchiveSample3Code)), REQUIRE][LOV]","[IF(boutType='microbes | microbesBGC | microbesBiomass | microbesBiomassBGC' AND samplingImpractical = 'OK'), SUGGESTED_ENTRY('active')][IF(geneticArchiveSampleCount>=1), REQUIRE][IF(samplingImpractical!='OK', DEFAULT_TO(NULL))][LOV('active','lost','consumed')]"
+sls_soilCoreCollection,geneticArchiveSample3Code,"Barcode of genetic archive subsample 3",string,NA,,"[ASCII]",
+sls_soilCoreCollection,geneticArchiveSample4ID,"Identifier for genetic archive subsample 4",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)ga4')]","[IF(geneticArchiveSampleCount >= 4), EQUALS(sampleID + '-ga4')][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,geneticArchiveSample4Fate,"Fate of genetic archive subsample 4",string,NA,,"[IF (IS_NOT_BLANK(geneticArchiveSample4ID) OR IS_NOT_BLANK(geneticArchiveSample4Code)), REQUIRE][LOV]","[IF(boutType='microbes | microbesBGC | microbesBiomass | microbesBiomassBGC' AND samplingImpractical = 'OK'), SUGGESTED_ENTRY('active')][IF(geneticArchiveSampleCount>=1), REQUIRE][IF(samplingImpractical!='OK', DEFAULT_TO(NULL))][LOV('active','lost','consumed')]"
+sls_soilCoreCollection,geneticArchiveSample4Code,"Barcode of genetic archive subsample 4",string,NA,,"[ASCII]",
+sls_soilCoreCollection,geneticArchiveSample5ID,"Identifier for genetic archive subsample 5",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)ga5')]","[IF(geneticArchiveSampleCount >= 5), EQUALS(sampleID + '-ga5')][IF(samplingImpractical != 'OK'), REQUIRE_NULL]"
+sls_soilCoreCollection,geneticArchiveSample5Fate,"Fate of genetic archive subsample 5",string,NA,,"[IF (IS_NOT_BLANK(geneticArchiveSample5ID) OR IS_NOT_BLANK(geneticArchiveSample5Code)), REQUIRE][LOV]","[IF(boutType='microbes | microbesBGC | microbesBiomass | microbesBiomassBGC' AND samplingImpractical = 'OK'), SUGGESTED_ENTRY('active')][IF(geneticArchiveSampleCount>=1), REQUIRE][IF(samplingImpractical!='OK', DEFAULT_TO(NULL))][LOV('active','lost','consumed')]"
+sls_soilCoreCollection,geneticArchiveSample5Code,"Barcode of genetic archive subsample 5",string,NA,,"[ASCII]",
+sls_soilCoreCollection,geneticArchiveSamplePrepMethod,"Preparation or preservation method for a genetic archive sample",string,NA,,"[LOV]","[IF(boutType != 'field only' AND samplingImpractical = 'OK'), REQUIRE][IF(samplingImpractical!='OK'), REQUIRE_NULL][LOV][SUGGESTED_ENTRY('dry ice')]"
+sls_soilCoreCollection,biomassID,"Identifier for biomass sample",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)bm')]","[IF(boutType= 'microbesBiomass|microbesBiomassBGC'), REQUIRE][IF(samplingImpractical!='OK'), REQUIRE_NULL][EQUALS(sampleID +'-bm')]"
+sls_soilCoreCollection,biomassFate,"Fate of biomass sample",string,NA,,"[IF (IS_NOT_BLANK(biomassID)), REQUIRE][LOV]","[IF(boutype != 'microbesBiomass|microbesBiomassBGC', HIDDEN][LOV][SUGGESTED_ENTRY('active')]"
+sls_soilCoreCollection,biomassCode,"Barcode of biomass sample",string,NA,,"[ASCII]",
+sls_soilCoreCollection,biomassSampleCondition,"Condition of a biomass sample during storage or processing",string,NA,,"[LOV]","[LOV][IF(samplingImpractical = 'OK'), REQUIRE][IF(samplingImpractical != 'OK'), REQUIRE_NULL][SUGGESTED_ENTRY('OK')]"
+sls_soilCoreCollection,horizonDetails,"Qualifier for soil horizon designation",string,NA,,"[LOV]","[LOV][IF(samplingImpractical = 'OK'),REQUIRE][IF(samplingImpractical != 'OK'),REQUIRE_NULL][SUGGESTED_ENTRY('OK')]"
+sls_soilCoreCollection,remarks,"Technician notes; free text comments accompanying the record",string,NA,,"[ASCII]","[ASCII]"
+sls_soilCoreCollection,collectedBy,"An identifier for the technician who collected the sample or specimen",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_soilCoreCollection,recordedBy,"An identifier for the technician who recorded the data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_soilCoreCollection,dataQF,"Data quality flag",string,NA,,"[ASCII]",
+sls_soilCoreCollection,fulcrumPrimaryKey,"Primary identifier for the record in Fulcrum at the same granularity for which the record occurs in the NEON database (i.e., one fulcrumPrimaryKey should map to a single record in the NEON database)",string,NA,,"[ASCII]",
+sls_metagenomicsPooling,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+sls_metagenomicsPooling,plotID,"Plot identifier (NEON site code_XXX)",string,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]","[NAMED_LOCATION_TYPE('OS Plot - bgc')]","[REQUIRE]"
+sls_metagenomicsPooling,horizon,"Organic or mineral soil",string,NA,,"[LOV]","[REQUIRE][LOV]"
+sls_metagenomicsPooling,setDate,"Date that trap was set",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+sls_metagenomicsPooling,collectDate,"Date of the collection event",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+sls_metagenomicsPooling,eventID,"An identifier for the set of information associated with the event, which includes information about the place and time of the event",string,NA,,"[ASCII]","[EQUALS(siteID+'.'+sampleTiming+'.'+collectDate)]"
+sls_metagenomicsPooling,samplingProtocolVersion,"The NEON document number and version where detailed information regarding the sampling method used is available; format NEON.DOC.######vX",string,NA,,"[LOV]","[REQUIRE][LOV]"
+sls_metagenomicsPooling,toCompositeSampleIDList,"List of composite identifiers in a pooled sample",string,NA,"[SPLIT_BY('|')]","[EXISTS]","[REQUIRE]"
+sls_metagenomicsPooling,toCompositeFateList,"List of fates of composite samples in a pooled sample",string,NA,"[SPLIT_BY('|')]","[ASCII]","[HIDDEN][DEFAULT_TO('processed')]"
+sls_metagenomicsPooling,toCompositeBarcodeList,"List of barcodes of composite samples in a pooled sample",string,NA,"[SPLIT_BY('|')]","[ASCII]",
+sls_metagenomicsPooling,compositeSampleID,"Unique identifier for a sample that is a composite of field collected material",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)comp')]","[DEFAULT_TO(plotID + horizon + collectDate)]"
+sls_metagenomicsPooling,compositeSampleFate,"Fate of a sample that is a composite of field collected material",string,NA,,"[LOV]","[LOV('active', 'lost', 'discarded')][SUGGESTED_ENTRY('active')]"
+sls_metagenomicsPooling,compositeSampleCode,"Barcode for a sample that is a composite of field collected material",string,NA,,"[ASCII]",
+sls_metagenomicsPooling,remarks,"Technician notes; free text comments accompanying the record",string,NA,,"[ASCII]","[ASCII]"
+sls_metagenomicsPooling,processedBy,"An identifier for the technician who processed the sample(s)",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_metagenomicsPooling,recordedBy,"An identifier for the technician who recorded the data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_metagenomicsPooling,sampleCondition,"Condition of a sample",string,NA,,"[LOV]","[REQUIRE][LOV][SUGGESTED_ENTRY('OK')]"
+sls_metagenomicsPooling,genomicsDataQF,"Quality flag for genomics sample",string,NA,,"[ASCII]",
+sls_metagenomicsPooling,fulcrumPrimaryKey,"Primary identifier for the record in Fulcrum at the same granularity for which the record occurs in the NEON database (i.e., one fulcrumPrimaryKey should map to a single record in the NEON database)",string,NA,,"[ASCII]",
+sls_bgcSubsampling,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+sls_bgcSubsampling,plotID,"Plot identifier (NEON site code_XXX)",string,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]","[NAMED_LOCATION_TYPE('OS Plot - bgc')]","[REQUIRE]"
+sls_bgcSubsampling,horizon,"Organic or mineral soil",string,NA,,"[LOV]","[REQUIRE][LOV]"
+sls_bgcSubsampling,setDate,"Date that trap was set",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+sls_bgcSubsampling,collectDate,"Date of the collection event",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+sls_bgcSubsampling,toxicodendronPossible,"Indicator for whether a sample may contain Toxicodendron spp",string,NA,,"[LOV]","[LOV]"
+sls_bgcSubsampling,samplingProtocolVersion,"The NEON document number and version where detailed information regarding the sampling method used is available; format NEON.DOC.######vX",string,NA,,"[LOV]","[LOV]"
+sls_bgcSubsampling,sampleID,"Identifier for sample",string,NA,,"[EXISTS]","[REQUIRE]"
+sls_bgcSubsampling,sampleFate,"Fate of a sample",string,NA,,"[LOV]","[HIDDEN][DEFAULT_TO('active')]"
+sls_bgcSubsampling,sampleCode,"Barcode of a sample",string,NA,,,
+sls_bgcSubsampling,cnSampleID,"Identifier for a carbon-nitrogen sample",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)cn')]","[DEFAULT_TO(sampleID + '-cn')]"
+sls_bgcSubsampling,cnSampleFate,"Fate of a carbon-nitrogen sample",string,NA,,"[IF (IS_BLANK(cnSampleID)), REQUIRE_NULL][IF (IS_NOT_BLANK(cnSampleID)), REQUIRE][LOV]","[LOV( 'active', 'lost'][SUGGESTED_ENTRY('active')"
+sls_bgcSubsampling,cnSampleCode,"Barcode of a carbon-nitrogen sample",string,NA,,"[ASCII]",
+sls_bgcSubsampling,ovenStartDate,"The date and time a sample was placed in the drying oven",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[GREATER_THAN_OR_EQUAL_TO(collectDate-12hr)]","[REQUIRE][DATE_FORMAT(YYYY-MM-DDTHH:MM)][GREATER_THAN_OR_EQUAL_TO(collectDate)]"
+sls_bgcSubsampling,ovenEndDate,"The date and time a sample was removed from the drying oven",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[GREATER_THAN_OR_EQUAL_TO(ovenStartDate)]","[DATE_FORMAT(YYYY-MM-DDTHH:MM)][GREATER_THAN_OR_EQUAL_TO(ovenStartDate)]"
+sls_bgcSubsampling,bgcArchiveID,"Identifier for a biogeochemistry archive sample",string,NA,,"[DOES_NOT_EXIST][MATCH_REGULAR_EXPRESSION('[A-Z]{4}_[0-9]{3}-[M|O]')][IF setDate < 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)+([1-4]*[0-9]{1}-|[1-4]*[0-9]{1}.5-)')][IF setDate > 2022-02-01T00:00, MATCH_REGULAR_EXPRESSION('-[2][1]|[2][3]|[3][9]|[4][1]-')][MATCH_REGULAR_EXPRESSION('20[0-9]{2}(0[1-9]|1[012])(0[1-9]|1[0-9]|2[0-9]|3[01])-(?i)ba')]","[EQUALS(sampleID + '-ba')]"
+sls_bgcSubsampling,bgcArchiveFate,"Fate of a biogeochemistry archive sample",string,NA,,"[IF (IS_NOT_BLANK(bgcArchiveID)), REQUIRE][LOV]","[LOV][SUGGESTED_ENTRY('active')]"
+sls_bgcSubsampling,bgcArchiveCode,"Barcode of a biogeochemistry archive sample",string,NA,,"[ASCII]",
+sls_bgcSubsampling,bgcArchiveMass,"Mass of a biogeochemistry archive sample",real,gram,,"[ASCII][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(500)]","[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(500)]"
+sls_bgcSubsampling,sampleCondition,"Condition of a sample",string,NA,,"[LOV]","[REQUIRE][LOV][SUGGESTED_ENTRY('OK')]"
+sls_bgcSubsampling,bgcRemarks,"Remarks from biogeochemistry subsample processing",string,NA,,"[ASCII]","[IF(sampleCondition='oven temperature out of range'),REQUIRE][IF(sampleCondition='storage temperature out of range'),REQUIRE][ASCII]"
+sls_bgcSubsampling,processedBy,"An identifier for the technician who processed the sample(s)",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_bgcSubsampling,recordedBy,"An identifier for the technician who recorded the data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_bgcSubsampling,bgcDataQF,"Quality flag for biogeochemistry sample",string,NA,,"[ASCII]",
+sls_soilMoisture,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+sls_soilMoisture,plotID,"Plot identifier (NEON site code_XXX)",string,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]","[NAMED_LOCATION_TYPE('OS Plot - bgc')]","[REQUIRE]"
+sls_soilMoisture,horizon,"Organic or mineral soil",string,NA,,"[LOV]","[REQUIRE][LOV]"
+sls_soilMoisture,setDate,"Date that trap was set",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+sls_soilMoisture,collectDate,"Date of the collection event",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+sls_soilMoisture,sampleID,"Identifier for sample",string,NA,,"[EXISTS]","[REQUIRE]"
+sls_soilMoisture,sampleFate,"Fate of a sample",string,NA,,"[LOV]","[HIDDEN][DEFAULT_TO('active')]"
+sls_soilMoisture,sampleCode,"Barcode of a sample",string,NA,,"[ASCII]",
+sls_soilMoisture,moistureSampleID,"Identifier of moisture sample",string,NA,,"[DOES_NOT_EXIST][ASCII]","[DEFAULT_TO(sampleID + '-sm')]"
+sls_soilMoisture,moistureSampleFate,"Fate of moisture sample",string,NA,,"[LOV]","[LOV( 'discarded', 'lost'][SUGGESTED_ENTRY('discarded')]"
+sls_soilMoisture,moistureSampleCode,"Barcode of moisture subsample",string,NA,,"[ASCII]",
+sls_soilMoisture,samplingProtocolVersion,"The NEON document number and version where detailed information regarding the sampling method used is available; format NEON.DOC.######vX",string,NA,,"[LOV]","[REQUIRE][LOV][SUGGESTED_ENTRY(previousValue)]"
+sls_soilMoisture,boatMass,"Mass of the weigh boat",real,gram,,"[GREATER_THAN(0)][LESS_THAN_OR_EQUAL_TO(100)]","[WARN][GREATER_THAN(0)][LESS_THAN_OR_EQUAL_TO(100)][REQUIRE]"
+sls_soilMoisture,freshMassBoatMass,"Combined mass of a fresh sample and weigh boat",real,gram,,"[IF(moistureSampleFate!='lost'),REQUIRE][GREATER_THAN(boatMass)]","[WARN][GREATER_THAN(boatMass)]"
+sls_soilMoisture,ovenStartDate,"The date and time a sample was placed in the drying oven",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[GREATER_THAN_OR_EQUAL_TO(collectDate-12hr)]","[DATE_FORMAT(YYYY-MM-DDTHH:MM)][GREATER_THAN_OR_EQUAL_TO(collectDate)]"
+sls_soilMoisture,ovenEndDate,"The date and time a sample was removed from the drying oven",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[GREATER_THAN_OR_EQUAL_TO(ovenStartDate)]","[DATE_FORMAT(YYYY-MM-DDTHH:MM)][GREATER_THAN_OR_EQUAL_TO(ovenStartDate)]"
+sls_soilMoisture,dryMassBoatMass,"Oven-dried mass of the sample and weigh boat",real,gram,,"[IF(moistureSampleFate!='lost'),REQUIRE][GREATER_THAN_OR_EQUAL_TO(boatMass)][LESS_THAN_OR_EQUAL_TO(freshMassBoatMass)]","[GREATER_THAN_OR_EQUAL_TO(boatMass)][LESS_THAN_OR_EQUAL_TO(freshMassBoatMass)]"
+sls_soilMoisture,soilMoisture,"Gravimetric water content of soil in grams of water per gram dry soil",real,gramsPerGram,"((freshMassBoatMass-boatMass)-(dryMassBoatMass-boatMass))/(dryMassBoatMass-boatMass)",,
+sls_soilMoisture,dryMassFraction,"Dry mass divided by fresh mass of a sample",real,NA,"(dryMassBoatMass-boatMass)/(freshMassBoatMass-boatMass)","[ASCII]",
+sls_soilMoisture,sampleCondition,"Condition of a sample",string,NA,,"[LOV]","[REQUIRE][LOV][SUGGESTED_ENTRY('OK')]"
+sls_soilMoisture,smRemarks,"Remarks from measurement of sample gravimetric soil moisture",string,NA,,"[ASCII]","[ASCII]"
+sls_soilMoisture,smMeasuredBy,"An identifier for the technician who measured or collected the soil moisture data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_soilMoisture,recordedBy,"An identifier for the technician who recorded the data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_soilMoisture,smDataQF,"Quality flag for soil moisture measurement",string,NA,,"[ASCII]",
+ntr,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+ntr,siteID,"NEON site code",string,NA,,"[NAMED_LOCATION_TYPE('SITE')]",
+ntr,extractionStartDate,"The start date-time for an extraction event",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,"[REQUIRE]"
+ntr,extractionEndDate,"The end date-time for an extraction event",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,"[HIDDEN][DEFAULT_TO('extractionStartDate')]"
+ntr,kclReferenceID,"Identifier for a potassium chloride (KCl) blank reference",string,NA,,"[MIGHT_EXIST][ASCII]","[REQUIRE][siteID & extractionStartDate & '-Bref' & kclBlankNumber]"
+ntr,kclReferenceFate,"Fate of a potassium chloride (KCl) blank reference",string,NA,,"[ASCII]","[HIDDEN][DEFAULT_TO('processed')]"
+ntr,kclReferenceCode,"Barcode of a potassium chloride (KCl) blank reference",string,NA,,"[ASCII]","[HIDDEN]"
+ntr,kclBlank1ID,"Identifier for the first potassium chloride (KCl) blank reference sample",string,NA,,"[DOES_NOT_EXIST][ASCII]","[REQUIRE][kclReferenceID & '-A']"
+ntr,kclBlank1Fate,"Fate of the first potassium chloride (KCl) blank blank reference sample",string,NA,,"[ASCII]","[HIDDEN][DEFAULT_TO('active')]"
+ntr,kclBlank1Code,"Barcode of the first potassium chloride (KCl) blank reference sample",string,NA,,"[ASCII]","[HIDDEN]"
+ntr,kclBlank2ID,"Identifier for the second potassium chloride (KCl) blank reference sample",string,NA,,"[DOES_NOT_EXIST][ASCII]","[WARN][kclReferenceID & '-B']"
+ntr,kclBlank2Fate,"Fate of the second potassium chloride (KCl) blank reference sample",string,NA,,"[ASCII]","[HIDDEN][DEFAULT_TO('active')]"
+ntr,kclBlank2Code,"Barcode of the second potassium chloride (KCl) blank reference sample",string,NA,,"[ASCII]","[HIDDEN]"
+ntr,kclBlank3ID,"Identifier for the third potassium chloride (KCl) blank reference sample",string,NA,,"[DOES_NOT_EXIST][ASCII]","[WARN][kclReferenceID & '-C']"
+ntr,kclBlank3Fate,"Fate of the third potassium chloride (KCl) blank reference sample",string,NA,,"[ASCII]","[HIDDEN][DEFAULT_TO('active')]"
+ntr,kclBlank3Code,"Barcode of the third potassium chloride (KCl) blank reference sample",string,NA,,"[ASCII]","[HIDDEN]"
+ntr,processedBy,"An identifier for the technician who processed the sample(s)",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+ntr,recordedBy,"An identifier for the technician who recorded the data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+ntr,remarks,"Technician notes; free text comments accompanying the record",string,NA,,"[ASCII]","[ASCII]"
+ntr,fulcrumVersion,"Version of the Fulcrum application used during data entry",string,NA,,"[ASCII]",
+ntr,platformInfo,"Operating System and browser information (where applicable) of computer used during data entry",string,NA,,"[ASCII]",
+ntr,dataQF,"Data quality flag",string,NA,,"[ASCII]",
+bgc_CNiso_externalAnalysis,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+bgc_CNiso_externalAnalysis,receivedDate,"Date a sample was received",dateTime,NA,"[CONVERT_TO_UTC(laboratoryName)]","[GREATER_THAN_OR_EQUAL_TO (2013-01-01T)][LESS_THAN_OR_EQUAL_TO (NOW + 24hr)]",
+bgc_CNiso_externalAnalysis,analysisDate,"Date that the sample was analyzed",dateTime,NA,"[CONVERT_TO_UTC(laboratoryName)]","[REQUIRE][GREATER_THAN_OR_EQUAL_TO (2013-01-01T)][LESS_THAN_OR_EQUAL_TO (NOW + 24hr)][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,locationID,"Identifier for location where sample was collected",string,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID' OR 'cfc_fieldData_in.sampleID' OR 'ltr_fielddata_in.fieldSampleID' OR 'bbc_percore_in.sampleID' OR 'mgp_permegapit_in.pitID')]","[NAMED_LOCATION_TYPE('OS Plot - cfc' OR 'OS Plot - bbc' OR 'OS Plot - bgc' OR 'OS Plot - ltr' OR 'MEGAPIT')]",
+bgc_CNiso_externalAnalysis,setDate,"Date that trap was set",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID' OR 'cfc_fieldData_in.sampleID' OR 'ltr_fielddata_in.fieldSampleID' OR 'bbc_percore_in.sampleID' OR 'mgp_permegapit_in.pitID')]",,
+bgc_CNiso_externalAnalysis,collectDate,"Date of the collection event",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID' OR 'cfc_fieldData_in.sampleID' OR 'ltr_fielddata_in.fieldSampleID' OR 'bbc_percore_in.sampleID' OR 'mgp_permegapit_in.pitID')]",,
+bgc_CNiso_externalAnalysis,cnSampleID,"Identifier for a carbon-nitrogen sample",string,NA,,"[EXISTS][IF(IS_BLANK(cnSampleCode)), REQUIRE][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,cnSampleFate,"Fate of a carbon-nitrogen sample",string,NA,"[DEFAULT_TO('discarded')]","[ASCII]",
+bgc_CNiso_externalAnalysis,cnSampleCode,"Barcode of a carbon-nitrogen sample",string,NA,,"[REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,sampleType,"Type of sample",string,NA,,"[REQUIRE][LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,runID,"A linking value provided by the external lab that associates the sample data to the run metadata, including QA values",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,internalLabID,"Internal identifier used by the external facility",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,acidTreatment,"Indicator for whether a sample has been acidified to remove carbonate prior to analysis",string,NA,,"[IF (sampleType = 'soil'), REQUIRE][LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,co2Trapped,"Indicator for whether carbon dioxide was trapped prior to analysis; used for measuring nitrogen in high C:N samples",string,NA,,"[IF (sampleType = 'vegetation'), REQUIRE][LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,nitrogenPercent,"Percent nitrogen in a sample on a dry weight basis",real,percent,,"[GREATER_THAN_OR_EQUAL_TO(0)][IF SAMPLE_CLASS('sample') = 'cfc_chemistrySubsampling_in.cnSampleID', LESS_THAN(5.5)][IF SAMPLE_CLASS('sample') = 'sls_bgcSubsampling_in.cn', LESS_THAN(4.5)][IF SAMPLE_CLASS('sample') = 'ltr_chemistrySubsampling_in.cnSampleID', LESS_THAN(4.5)][IF SAMPLE_CLASS('sample') = 'bbc_chemistryPooling_in.cnSampleID', LESS_THAN(4.5)][IF SAMPLE_CLASS('sample') = 'mpr_perrootsample_in.sampleID', LESS_THAN(4.5)][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,carbonPercent,"Percent carbon in a sample on a dry weight basis",real,percent,,"[GREATER_THAN(0)][LESS_THAN(75)][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,CNratio,"Ratio of carbon to nitrogen concentration in a sample on a dry weight basis",real,NA,,"[IF(IS_BLANK(carbonPercent)), REQUIRE_NULL][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,d15N,"Measure of the ratio of 15N:14N in a sample, relative to atmospheric N2",real,permill,,"[GREATER_THAN(13-)][LESS_THAN(16)][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,d13C,"Measure of the ratio of 13C:12C in a sample, relative to Vienna Pee Dee Belemnite",real,permill,,"[GREATER_THAN(40-)][LESS_THAN(8-)][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,cnPercentQF,"Quality flag for concentration values outside the calibration range",string,NA,,"[LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,cnIsotopeQF,"Quality flag for stable isotope values outside the calibration range",string,NA,,"[LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,percentAccuracyQF,"Quality flag for accuracy of percent concentration values of QA materials associated with the run",string,NA,,"[LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,isotopeAccuracyQF,"Quality flag for accuracy of stable isotope values of QA materials associated with the run",string,NA,,"[LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,analyticalRepNumber,"Number of the analytical replicate",unsigned integer,number,,"[LESS_THAN(10)][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,remarks,"Technician notes; free text comments accompanying the record",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,laboratoryName,"Name of the laboratory or facility that is processing the sample",string,NA,"[DEFAULT_TO_LAB_LOGGED_IN]","[NAMED_LOCATION_TYPE('External Lab')]",
+bgc_CNiso_externalAnalysis,testMethod,"Method used to conduct test",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,instrument,"Type of instrument used for the analysis",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,analyzedBy,"Name of lab personnel analyzing sample",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,reviewedBy,"Name of lab personnel who reviewed the data prior to submission",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalAnalysis,dataQF,"Data quality flag",string,NA,,"[ASCII]",
+sls_soilpH,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+sls_soilpH,plotID,"Plot identifier (NEON site code_XXX)",string,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]","[NAMED_LOCATION_TYPE('OS Plot - bgc')]","[REQUIRE]"
+sls_soilpH,horizon,"Organic or mineral soil",string,NA,,"[LOV]","[LOV]"
+sls_soilpH,setDate,"Date that trap was set",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+sls_soilpH,collectDate,"Date of the collection event",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+sls_soilpH,processedDate,"Date or date and time of processing event",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,"[WARN][DATE_FORMAT(YYYY-MM-DDTHH:MM)][GREATER_THAN_OR_EQUAL_TO(collectDate)]"
+sls_soilpH,sampleID,"Identifier for sample",string,NA,,"[EXISTS]","[REQUIRE]"
+sls_soilpH,sampleFate,"Fate of a sample",string,NA,,"[LOV]","[HIDDEN][DEFAULT_TO('active')]"
+sls_soilpH,sampleCode,"Barcode of a sample",string,NA,,,
+sls_soilpH,pHSampleID,"Identifier for pH sample",string,NA,,"[DOES_NOT_EXIST][ASCII]","[DEFAULT_TO(sampleID + '-pH')]"
+sls_soilpH,pHSampleFate,"Fate of pH sample",string,NA,,"[LOV]","[LOV( 'discarded', 'consumed', 'lost'][SUGGESTED_ENTRY('discarded')]"
+sls_soilpH,pHSampleCode,"Barcode of pH sample",string,NA,,"[ASCII]",
+sls_soilpH,samplingProtocolVersion,"The NEON document number and version where detailed information regarding the sampling method used is available; format NEON.DOC.######vX",string,NA,,"[LOV]","[REQUIRE][LOV]"
+sls_soilpH,pHSoilInWaterMass,"Mass of soil used to analyze pH in water solution",real,gram,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(100)]","[WARN][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(50)]"
+sls_soilpH,pHWaterVol,"Volume of water used for pH measurement",real,milliliter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(100)]","[WARN][GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(100)]"
+sls_soilpH,soilInWaterpH,"pH value of soil measured in water solution",real,pH,,"[IF(pHSampleFate!='lost' AND IS_BLANK(soilInCaClpH)), REQUIRE][GREATER_THAN_OR_EQUAL_TO(2)][LESS_THAN_OR_EQUAL_TO(11)]","[GREATER_THAN_OR_EQUAL_TO(2)][LESS_THAN_OR_EQUAL_TO(11)]"
+sls_soilpH,waterpHRatio,"Ratio of water to soil for pH measurement",real,NA,"[pHWaterVol/pHSoilInWaterMass]",,
+sls_soilpH,pHSoilInCaClMass,"Mass of soil used to analyze pH in calcium chloride solution",real,gram,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(100)]","[EQUALS(pHSoilInWaterMass)]"
+sls_soilpH,pHCaClVol,"Volume of water used for CaCl measurement",real,milliliter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN_OR_EQUAL_TO(200)]","[EQUALS(pHWaterVol+'vol of CaCl2 added')]"
+sls_soilpH,soilInCaClpH,"pH value of soil measured in calcium chloride solution",real,pH,,"[IF(pHSampleFate!='lost'), REQUIRE][GREATER_THAN_OR_EQUAL_TO(2)][LESS_THAN_OR_EQUAL_TO(11)]","[IF(pHSampleFate!='lost'), REQUIRE][GREATER_THAN_OR_EQUAL_TO(2)][LESS_THAN_OR_EQUAL_TO(11)]"
+sls_soilpH,caclpHRatio,"Ratio of calcium chloride to soil for pH measurement",real,NA,"[pHCaClVol/pHSoilInCaClMass]",,
+sls_soilpH,pHRemarks,"Remarks from measurement of sample pH",string,NA,,"[ASCII]","[ASCII]"
+sls_soilpH,pHMeasuredBy,"An identifier for the technician who measured or collected the pH data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_soilpH,recordedBy,"An identifier for the technician who recorded the data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+sls_soilpH,pHDataQF,"Quality flag for pH measurement",string,NA,,"[ASCII]",
+ntr,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+ntr,plotID,"Plot identifier (NEON site code_XXX)",string,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]","[NAMED_LOCATION_TYPE('OS Plot - bgc')]","[NAMED_LOCATION_TYPE('OS Plot - bgc')]"
+ntr,setDate,"Date that trap was set",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+ntr,collectDate,"Date of the collection event",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID')]",,
+ntr,sampleID,"Identifier for sample",string,NA,,"[EXISTS]","[REQUIRE]"
+ntr,sampleFate,"Fate of a sample",string,NA,,"[ASCII]","[HIDDEN][DEFAULT_TO('active')]"
+ntr,sampleCode,"Barcode of a sample",string,NA,,"[ASCII]","[HIDDEN]"
+ntr,samplingProtocolVersion,"The NEON document number and version where detailed information regarding the sampling method used is available; format NEON.DOC.######vX",string,NA,,"[LOV]","[LOV]"
+ntr,kclSampleID,"Identifier for a potassium chloride (KCl) extract sample",string,NA,,"[REQUIRE][DOES_NOT_EXIST][ASCII]","[REQUIRE][sampleID & '-kcl']"
+ntr,kclSampleFate,"Fate of a potassium chloride (KCl) extract sample",string,NA,,"[LOV]","[LOV][SUGGESTED_ENTRY('active')]"
+ntr,kclSampleCode,"Barcode of a potassium chloride (KCl) extract sample",string,NA,,"[ASCII]","[HIDDEN]"
+ntr,incubationPairID,"Identifier for a linked pair of soil samples used to measure net nitrogen transformation rates",string,NA,,"[ASCII]","[HIDDEN]"
+ntr,nTransBoutType,"Category of bout in relation to nitrogen transformation sample collection",string,NA,,"[LOV]","[HIDDEN]"
+ntr,incubationLength,"Length of soil incubation",real,day,"[collectDate - setDate][DAYS]",,
+ntr,kclBatchNumber,"Potassium chloride (KCl) batch number used to extract a set of samples",unsigned integer,number,,,"[REQUIRE]"
+ntr,kclReferenceID,"Identifier for a potassium chloride (KCl) blank reference",string,NA,,"[ASCII][REFERENCE_SAMPLE_EXISTS('tag', 'ntr_internalLabBlanks_in.kclReferenceID')]","[REQUIRE][siteID & extractionStartDate & '-Bref' & kclBatchNumber]"
+ntr,soilFreshMass,"Total fresh mass of soil",real,gram,,"[GREATER_THAN(0)][LESS_THAN(50)]","[REQUIRE][GREATER_THAN(0)][LESS_THAN(50)]"
+ntr,kclVolume,"Volume potassium chloride (KCl) used to extract soil sample",real,milliliter,,"[GREATER_THAN(10)][LESS_THAN(300)]","[REQUIRE][GREATER_THAN(10)][LESS_THAN(300)]"
+ntr,extractionStartDate,"The start date-time for an extraction event",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,"[REQUIRE]"
+ntr,extractionEndDate,"The end date-time for an extraction event",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[GREATER_THAN(extractionStartDate)]","[IF (extractionEndDate < extractionStartDate), WARN][IF (extractionEndDate > extractionStartDate + 30 hours), WARN]"
+ntr,sampleCondition,"Condition of a sample",string,NA,,"[LOV]","[LOV][SUGGESTED_ENTRY('OK')]"
+ntr,remarks,"Technician notes; free text comments accompanying the record",string,NA,,"[ASCII]","[IF (sampleCondition = 'other'), REQUIRE][ASCII]"
+ntr,processedBy,"An identifier for the technician who processed the sample(s)",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+ntr,recordedBy,"An identifier for the technician who recorded the data",string,NA,,"[ASCII]","[FROM_PERSONNEL][SUGGESTED_ENTRY(previousValue)]"
+ntr,fulcrumVersion,"Version of the Fulcrum application used during data entry",string,NA,,"[ASCII]",
+ntr,platformInfo,"Operating System and browser information (where applicable) of computer used during data entry",string,NA,,"[ASCII]",
+ntr,dataQF,"Data quality flag",string,NA,,"[ASCII]",
+ntr,fulcrumPrimaryKey,"Primary identifier for the record in Fulcrum at the same granularity for which the record occurs in the NEON database (i.e., one fulcrumPrimaryKey should map to a single record in the NEON database)",string,NA,,"[ASCII]",
+ntr_externalLab,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+ntr_externalLab,plotID,"Plot identifier (NEON site code_XXX)",string,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID' OR 'ntr_internalLabBlanks_in.kclReferenceID')]","[NAMED_LOCATION_TYPE('OS Plot - bgc' OR 'SITE')]",
+ntr_externalLab,setDate,"Date that trap was set",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID' OR 'ntr_internalLabBlanks_in.kclReferenceID')]",,
+ntr_externalLab,collectDate,"Date of the collection event",dateTime,NA,"[DERIVE_FROM_SAMPLE_TREE('sls_soilCoreCollection_in.sampleID' OR 'ntr_internalLabBlanks_in.kclReferenceID')]",,
+ntr_externalLab,kclSampleID,"Identifier for a potassium chloride (KCl) extract sample",string,NA,,"[IF(IS_BLANK(kclSampleCode)),REQUIRE][EXISTS][ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,kclSampleFate,"Fate of a potassium chloride (KCl) extract sample",string,NA,"[DEFAULT_TO('discarded')]","[ASCII]",
+ntr_externalLab,kclSampleCode,"Barcode of a potassium chloride (KCl) extract sample",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,receivedDate,"Date a sample was received",dateTime,NA,"[CONVERT_TO_UTC(laboratoryName)]",,
+ntr_externalLab,receivedCondition,"Condition of the sample on the date it was received",string,NA,,"[LOV]",
+ntr_externalLab,sampleCondition,"Condition of a sample",string,NA,,"[LOV][REQUIRE_COLUMN]",
+ntr_externalLab,internalLabID,"Internal identifier used by the external facility",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNAnalysisDate,"Date an ammonium sample was analyzed",dateTime,NA,"[CONVERT_TO_UTC(laboratoryName)]","[IF(IS_NOT_BLANK(kclAmmoniumNConc)), REQUIRE][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNRunID,"A linking value that associates the ammonium sample data to the run metadata, including QA values",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNInstrument,"Type of instrument used for ammonium analysis",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,kclAmmoniumNConc,"Concentration of ammonium N in a potassium chloride extract",real,milligramsPerLiter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN(500)][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNRepNum,"Analytical replicate number for ammonium sample",unsigned integer,number,,"[LESS_THAN(11)][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNQF,"Quality flag for ammonium N values",string,NA,,"[LOV][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNRemarks,"Free text comments accompanying the ammonium record",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNMethod,"Method used to test sample for ammonium N concentration",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNAnalyzedBy,"Name of lab personnel analyzing sample for ammonium N",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,ammoniumNReviewedBy,"Name of lab personnel who reviewed ammonium N data prior to submission",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNAnalysisDate,"Date a nitrate + nitrite N sample was analyzed",dateTime,NA,"[CONVERT_TO_UTC(laboratoryName)]","[IF(IS_NOT_BLANK(kclNitrateNitriteNConc)), REQUIRE][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNRunID,"a linking value provided by the external lab that associates the nitrate plus nitrite to the run metadata",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNInstrument,"Type of instrument used for nitrate + nitrite N analysis",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,kclNitrateNitriteNConc,"Concentration of nitrate + nitrite N in a potassium chloride extract",real,milligramsPerLiter,,"[GREATER_THAN_OR_EQUAL_TO(0)][LESS_THAN(500)][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNRepNum,"Analytical replicate number for nitrate + nitrite N sample",unsigned integer,number,,"[LESS_THAN(11)][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNQF,"Quality flag for nitrate + nitrite N values",string,NA,,"[LOV][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNRemarks,"Free text comments accompanying the nitrate + nitrite N record",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNMethod,"Method used to test sample for nitrate + nitrite N concentration",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNAnalyzedBy,"Name of lab personnel analyzing sample for nitrate + nitrite N",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,nitrateNitriteNReviewedBy,"Name of lab personnel who reviewed nitrite + nitrate N data prior to submission",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalLab,laboratoryName,"Name of the laboratory or facility that is processing the sample",string,NA,"[DEFAULT_TO_LAB_LOGGED_IN]","[NAMED_LOCATION_TYPE('External Lab')]",
+ntr_externalLab,dataQF,"Data quality flag",string,NA,,"[ASCII]",
+ntr_externalSummary,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+ntr_externalSummary,startDate,"The start date-time or interval during which an event occurred",dateTime,NA,"[UPLOAD_DATE]",,
+ntr_externalSummary,endDate,"The end date-time or interval during which an event occurred",dateTime,NA,"[UPLOAD_DATE]",,
+ntr_externalSummary,analyte,"Analyte or parameter measured",string,NA,,"[REQUIRE][LOV][REQUIRE_COLUMN]",
+ntr_externalSummary,analyteUnits,"Associated units of measure for analyte",string,NA,,"[REQUIRE][LOV][REQUIRE_COLUMN]",
+ntr_externalSummary,sampleType,"Type of sample",string,NA,,"[REQUIRE][LOV][REQUIRE_COLUMN]",
+ntr_externalSummary,qaReferenceID,"Identifier for quality assurance reference material or standard",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalSummary,lotID,"Lot or batch number for quality assurance material",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalSummary,analyteKnownValue,"The known value of a given analyte for a quality assurance reference material or standard, with units tied to the analyte",real,NA,,"[REQUIRE][REQUIRE_COLUMN]",
+ntr_externalSummary,analyteObservedValue,"The measured value of a given analyte for a standard reference material, with units tied to the analyte",real,NA,,"[REQUIRE_COLUMN]",
+ntr_externalSummary,analytePercentRecovery,"Percent recovery of the analyte, based on analysis of quality assurance reference materials or standards treated as unknowns",real,percent,,"[REQUIRE][REQUIRE_COLUMN]",
+ntr_externalSummary,analyteStandardDeviation,"Long-term average standard deviation values of the analyte, based on analysis of quality assurance reference materials or standards treated as unknowns",real,NA,,"[REQUIRE][REQUIRE_COLUMN]",
+ntr_externalSummary,analyteAccuracy,"Long-term average accuracy, e.g. the absolute difference between observed and known values of the analyte, based on analysis of quality assurance reference materials or standards treated as unknowns",real,NA,,,
+ntr_externalSummary,methodDetectionLimit,"Detection limit for method used",real,NA,,"[REQUIRE][REQUIRE_COLUMN]",
+ntr_externalSummary,analyteMetricsCount,"Count of how many measurements were used to determine analyte metrics",unsigned integer,number,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalSummary,qaReportingStartDate,"Start date for the quality assurance (QA) reporting period",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[REQUIRE][LESS_THAN_OR_EQUAL_TO (NOW + 24hr)][REQUIRE_COLUMN]",
+ntr_externalSummary,qaReportingEndDate,"End date for the quality assurance (QA) reporting period",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[REQUIRE][GREATER_THAN_OR_EQUAL_TO (qaReportingStartDate)][LESS_THAN_OR_EQUAL_TO (NOW + 24hr)][REQUIRE_COLUMN]",
+ntr_externalSummary,laboratoryName,"Name of the laboratory or facility that is processing the sample",string,NA,"[DEFAULT_TO_LAB_LOGGED_IN]","[NAMED_LOCATION_TYPE('External Lab')]",
+ntr_externalSummary,labSpecificStartDate,"Date a specific analyte, instrument, and associated method detection limit combination started",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,
+ntr_externalSummary,labSpecificEndDate,"Date a specific analyte, instrument, and associated method detection limit combination ended",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,
+ntr_externalSummary,instrument,"Type of instrument used for the analysis",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalSummary,method,"Published method used for analysis",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+ntr_externalSummary,dataQF,"Data quality flag",string,NA,,"[ASCII]",
+bgc_CNiso_externalSummary,uid,"Unique ID within NEON database; an identifier for the record",string,NA,"[CREATE_UID]",,
+bgc_CNiso_externalSummary,startDate,"The start date-time or interval during which an event occurred",dateTime,NA,"[UPLOAD_DATE]",,
+bgc_CNiso_externalSummary,endDate,"The end date-time or interval during which an event occurred",dateTime,NA,"[UPLOAD_DATE]",,
+bgc_CNiso_externalSummary,analyte,"Analyte or parameter measured",string,NA,,"[REQUIRE][LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,analyteUnits,"Associated units of measure for analyte",string,NA,,"[REQUIRE][LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,sampleType,"Type of sample",string,NA,,"[REQUIRE][LOV][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,qaReferenceID,"Identifier for quality assurance reference material or standard",string,NA,,"[REQUIRE][ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,analyteKnownValue,"The known value of a given analyte for a quality assurance reference material or standard, with units tied to the analyte",real,NA,,"[REQUIRE][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,analyteObservedValue,"The measured value of a given analyte for a standard reference material, with units tied to the analyte",real,NA,,"[REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,analyteAbsoluteError,"Long-term average absolute error, e.g. the difference between observed and known values of the analyte, based on analysis of quality assurance reference materials or standards treated as unknowns",real,NA,,"[REQUIRE][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,analyteAccuracy,"Long-term average accuracy, e.g. the absolute difference between observed and known values of the analyte, based on analysis of quality assurance reference materials or standards treated as unknowns",real,NA,,,
+bgc_CNiso_externalSummary,analyteStandardDeviation,"Long-term average standard deviation values of the analyte, based on analysis of quality assurance reference materials or standards treated as unknowns",real,NA,,"[REQUIRE][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,analyteMetricsCount,"Count of how many measurements were used to determine analyte metrics",unsigned integer,number,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,qaReportingStartDate,"Start date for the quality assurance (QA) reporting period",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[REQUIRE][LESS_THAN_OR_EQUAL_TO (NOW + 24hr)][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,qaReportingEndDate,"End date for the quality assurance (QA) reporting period",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]","[REQUIRE][GREATER_THAN_OR_EQUAL_TO (qaReportingStartDate)][LESS_THAN_OR_EQUAL_TO (NOW + 24hr)][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,laboratoryName,"Name of the laboratory or facility that is processing the sample",string,NA,"[DEFAULT_TO_LAB_LOGGED_IN]","[NAMED_LOCATION_TYPE('External Lab')]",
+bgc_CNiso_externalSummary,labSpecificStartDate,"Date a specific analyte, instrument, and associated method detection limit combination started",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,
+bgc_CNiso_externalSummary,labSpecificEndDate,"Date a specific analyte, instrument, and associated method detection limit combination ended",dateTime,NA,"[CONVERT_TO_UTC(namedLocation)]",,
+bgc_CNiso_externalSummary,instrument,"Type of instrument used for the analysis",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,testMethod,"Method used to conduct test",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,method,"Published method used for analysis",string,NA,,"[ASCII][REQUIRE_COLUMN]",
+bgc_CNiso_externalSummary,dataQF,"Data quality flag",string,NA,,"[ASCII]",

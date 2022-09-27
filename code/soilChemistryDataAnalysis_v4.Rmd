@@ -1,0 +1,506 @@
+---
+title: "Soil Discrete Data Summary Generator"
+author: "Lee Stanish"
+date: "March 20, 2020"
+output: 
+    html_document:
+        toc: true
+        toc_float : true
+        keep_md: true
+---
+
+# For downloading and creating the stack this uses the NEON tutorial at https://www.neonscience.org/resources/learning-hub/tutorials/neondatastackr
+
+```{r}
+
+library(neonUtilities)
+library(plyr)
+library(tidyverse)
+library(xtable)
+library(plotly)
+library(ggrepel)
+
+```
+
+```{r, eval=FALSE}
+zipsByProduct(dpID='DP1.10086.001', check.size=FALSE, package = 'expanded', site = 'all')
+```
+
+```{r, eval=FALSE}
+stackByTable(filepath="/home/jlb/jlb@umass.edu/GoEcology/myGitHub/lterwg-emergent/code/filesToStack10086")
+```
+
+
+
+
+
+# get neonstore data package
+# https://www.rdocumentation.org/packages/neonstore/versions/0.4.4
+
+  
+``` {r}
+soil_fieldBgc_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_bgcSubsampling.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')
+soil_fieldBgc_down <- select(soil_fieldBgc_down, sampleID, cnSampleID, 
+        bgcArchiveID,bgcSampleCondition=sampleCondition, bgcDataQF)
+soil_fieldCore_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_soilCoreCollection.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')
+soil_fieldMoist_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_soilMoisture.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')
+soil_fieldPh_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_soilpH.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')
+
+```
+
+
+```{r}
+# join soil field tables: core collection, moisture, pH, bgc sub-sampling
+soilField_down <- left_join(soil_fieldCore_down, soil_fieldMoist_down, 
+            by=c('sampleID', 'domainID', 'siteID', 'namedLocation', 'plotID', 'collectDate', 'horizon', 'sampleCode') ) %>%
+    select(-uid.x, -uid.y, -samplingProtocolVersion.y)
+soilField_down <- left_join(soilField_down, soil_fieldPh_down, by=c('sampleID', 'sampleCode', 'domainID', 'siteID',
+                                                     'plotID', 'namedLocation', 'collectDate')) %>%
+  select(-uid, -boatMass, -freshMassBoatMass, -dryMassBoatMass, -pHSoilInWaterMass, -pHWaterVol,
+         -pHSoilInCaClMass, -pHCaClVol, -pHSampleID)
+soilField_down <- left_join(soilField_down, soil_fieldBgc_down, by=c('sampleID') )
+```
+
+
+```{r}
+# read soil chem and isotope data #
+soil_chem_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_soilChemistry.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv') %>% 
+  select(sampleID, cnSampleID, sampleType,acidTreatment, nitrogenPercent, organicCPercent,
+         CNratio, cnPercentQF, percentAccuracyQF, analyticalRepNumber, cnRemarks=remarks,
+         cnLaboratoryName=laboratoryName, cnTestMethod=testMethod, cnInstrument=instrument, 
+         cnDataQF=dataQF)
+```
+
+```{r}
+# join soil chem and field data tables
+soilFieldChem_down <- left_join(soilField_down, soil_chem_down, by=c('sampleID', 'cnSampleID') )
+```
+
+
+```{r}
+# download metagenomics data #
+
+mmsDat_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_metagenomicsPooling.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')  
+```
+
+```{r}
+# Metagenomic samples collected in 2019
+
+mmsDat_down_2019_layer <- mmsDat_down %>% 
+  filter (collectDate > "2019-01-01" & collectDate <"2019-12-31") %>% 
+  mutate(
+    soilLayer = case_when(
+      grepl("-O-", genomicsSampleID) ~ "organic",
+      grepl("-M-", genomicsSampleID) ~ "mineral"
+    )
+  )
+```
+
+```{r}
+# Metagenomic samples collected in 2019
+
+mmsDat_down_2018_layer <- mmsDat_down %>% 
+  filter (collectDate > "2018-01-01" & collectDate <"2018-12-31") %>% 
+  mutate(
+    soilLayer = case_when(
+      grepl("-O-", genomicsSampleID) ~ "organic",
+      grepl("-M-", genomicsSampleID) ~ "mineral"
+    )
+  )
+```
+  
+  
+```{r} 
+mmsDat_down_2019_forest_neon_org <- mmsDat_down_2019_layer %>% 
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "CLBJ", "MOAB", "NIWO",  "WREF", "SJER", "BONA", "PUUM")) %>% 
+  filter(soilLayer == "organic")
+```
+
+
+```{r} 
+mmsDat_down_2018_forest_neon_org <- mmsDat_down_2018_layer %>% 
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "CLBJ", "MOAB", "NIWO",  "WREF", "SJER", "BONA", "PUUM")) %>% 
+  filter(soilLayer == "organic")
+```
+
+
+
+
+
+
+
+
+## NOTE: To JOIN METAGENOMICS DATA REQUIRES EITHER EXPANDING THE MMS DATA OR AVERAGING THE SOIL FIELD
+# DATA. SOIL FIELD DATA ARE AT THE SUBPLOT LEVEL, METAGENOMICS DATA ARE AT THE PLOT LEVEL ##
+
+
+
+### Site-level ranges in soil moisture
+
+```{r plot soil moisture, warning=FALSE, message=FALSE, results = 'asis', echo = FALSE}
+
+g <- ggplot(data=subset(soilFieldChem_down, !is.na(soilMoisture)), aes(x=siteID, y=soilMoisture) ) +
+    geom_boxplot() +
+  theme(axis.text.x= element_text(angle=45))
+ggplotly(g)
+
+
+```
+
+
+
+### Site-level ranges in soil temp
+
+```{r plot soil temp, warning=FALSE, message=FALSE, results = 'asis', echo = FALSE}
+
+g <- ggplot(data=subset(soilFieldChem_down, !is.na(soilTemp)), aes(x=siteID, y=soilTemp) ) +
+    geom_boxplot() +
+  ylim(c(-15, 50)) +
+  theme(axis.text.x= element_text(angle=45))
+ggplotly(g)
+
+```
+
+
+### Forested sites only
+```{r 'plot forested sites', warning=FALSE, results='asis', echo = FALSE}
+
+forest <- soilFieldChem_down[grep('forest|Forest', soilFieldChem_down$nlcdClass), ]
+#unique(forGrass$siteID)
+g1 <- ggplot(forest, aes(x=siteID, y=soilTemp)) + 
+  geom_boxplot() + 
+  ylim(c(-20, 50)) +
+  theme(axis.text.x = element_text(angle=45) ) +
+  ggtitle('Forested Plots')
+ggplotly(g1)
+
+g2 <- ggplot(forest, aes(x=siteID, y=soilMoisture)) + 
+  geom_boxplot() + 
+  ylim(c(-1, 15)) +
+  theme(axis.text.x = element_text(angle=45)) +
+    ggtitle('Forested Plots')
+ggplotly(g2)
+
+```
+
+### Grassland sites only
+```{r 'plot grassland sites', warning=FALSE, results='asis', echo = FALSE}
+
+grass <- soilFieldChem_down[grep('grassland|Grassland', soilFieldChem_down$nlcdClass), ]
+#unique(forGrass$siteID)
+g1 <- ggplot(grass, aes(x=siteID, y=soilTemp)) + 
+  geom_boxplot() + 
+  ylim(c(-20, 50)) +
+  theme(axis.text.x = element_text(angle=45)) +
+      ggtitle('Grassland Plots')
+ggplotly(g1)
+
+g2 <- ggplot(grass, aes(x=siteID, y=soilMoisture)) + 
+  geom_boxplot() + 
+  ylim(c(-1, 5)) +
+  theme(axis.text.x = element_text(angle=45)) +
+        ggtitle('Grassland Plots')
+ggplotly(g2)
+
+```
+
+
+### Site-level summary table of discrete temp, moisture, and pH data. Not rendering nicely...
+```{r 'site level summary tables', warning=FALSE, message=FALSE}
+
+#### moisture ####
+hasMoisture <- !is.na(soilField_down$soilMoisture)
+
+moistureSummary <- data.frame(soilField_down[hasMoisture, ] %>% group_by(siteID) %>% 
+  summarise(meansoilMoisture=mean(soilMoisture)) )
+
+dat <- xtable(moistureSummary)
+print(dat, type = "html")
+
+
+#### temp ####
+hasTemp <- !is.na(soilField_down$soilTemp)
+
+tempSummary <- data.frame(soilField_down[hasTemp, ] %>% group_by(siteID) %>% 
+  summarise(meansoilTemp=mean(soilTemp)) )
+
+dat <- xtable(moistureSummary)
+print(dat, type = "html")
+
+
+#### pH ####
+haspH <- !is.na(soilField_down$soilInCaClpH)
+
+pHSummary <- data.frame(soilField_down[haspH, ] %>% group_by(siteID) %>% 
+  summarise(meansoilpH=mean(soilInCaClpH)) )
+
+dat <- xtable(pHSummary)
+print(dat, type = "html")
+
+```
+
+
+*****JEFFS NEW SECTIONS*****
+
+# nlcdClass = evergreenForest, mixedForest, decidiousForest
+# get means for each siteID and ncldClass
+# incorporating samplingTiming
+
+```{r}
+  forest %>% 
+  filter(nlcdClass == "evergreenForest") %>% 
+  ggplot(aes(x=siteID, y=soilTemp, fill = nlcdClass)) + 
+  geom_boxplot() + 
+  ylim(c(-20, 50)) +
+  theme(axis.text.x = element_text(angle=45) ) +
+  ggtitle('Evergreen Forested Plots')
+```
+
+```{r}
+  forest %>% 
+  filter(nlcdClass == "evergreenForest") %>% 
+  ggplot(aes(x=siteID, y=soilMoisture, fill = nlcdClass)) + 
+  geom_boxplot() + 
+  ylim(c(-1, 10)) +
+  theme(axis.text.x = element_text(angle=45) ) +
+  ggtitle('Evergreen Forested Plots')
+```
+
+
+```{r}
+forest_sub <- forest %>% 
+  group_by(siteID, nlcdClass) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilMoisture, y=mean_soilTemp, color = nlcdClass)) + 
+  geom_point() +
+  xlim(c(0, 4)) +
+  ylim(c(0, 30)) +
+  ggtitle('Soil Moisture x Temperatue Forested Plots')
+ggplotly(g1)
+```
+
+```{r}
+forest_sub <- forest %>% 
+  filter(nlcdClass == "deciduousForest") %>% 
+  filter(sampleTiming == "peakGreenness") %>% 
+  group_by(siteID) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilMoisture, y=mean_soilTemp, color = siteID, label = siteID)) + 
+  geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+  xlim(c(0, 4)) +
+  ylim(c(0, 30)) +
+  ggtitle('Soil Moisture x Temperatue Forested Plots')
+g1
+```
+
+
+```{r}
+forest_sub_down <- forest %>% 
+  filter(nlcdClass == "deciduousForest") %>% 
+  filter(sampleTiming == "peakGreenness") %>% 
+  group_by(siteID) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilMoisture, y=mean_soilTemp, color = siteID, label = siteID)) + 
+  geom_point() + geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+  xlim(c(0, 4)) +
+  ylim(c(0, 30)) +
+  ggtitle('Soil Moisture x Temperatue Forested Plots')
+g1
+```
+
+```{r}
+forest_sub <- forest %>%
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "DCFS", "STER", "CLBJ", "MOAB", "NIWO", "JORN", "WREF", "SJER", "TOOL", "BONA", "PUUM")) %>% 
+  filter(nlcdClass == "deciduousForest") %>% 
+  filter(sampleTiming == "peakGreenness") %>% 
+  group_by(siteID) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilMoisture, y=mean_soilTemp, label = siteID)) + 
+  geom_point() + 
+  geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+  xlim(c(0, 1.5)) +
+  ylim(c(0, 30)) +
+  ggtitle('Soil Moisture x Temperatue Decidious Forested Plots')
+g1
+```
+
+```{r}
+forest_sub <- forest %>%
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "DCFS", "STER", "CLBJ", "MOAB", "NIWO", "JORN", "WREF", "SJER", "TOOL", "BONA", "PUUM")) %>% 
+  filter(nlcdClass == "evergreenForest") %>% 
+  filter(sampleTiming == "peakGreenness") %>% 
+  group_by(siteID) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilMoisture, y=mean_soilTemp, label = siteID)) + 
+  geom_point(color = "darkgreen") + 
+  geom_label_repel(aes(label = siteID),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = 'grey50') +
+  xlim(c(0, 1)) +
+  ylim(c(0, 30)) +
+  xlab("Mean Soil Moisture (%) ") +
+  ylab("Mean Soil Temperature (°C)") 
+#  ggtitle('Soil Moisture x Temperatue Evergreen Forested Plots')
+g1
+```
+
+
+```{r}
+forest_sub <- forest %>% 
+  filter(nlcdClass == "deciduousForest") %>% 
+  filter(sampleTiming == "peakGreenness") 
+g1 <- ggplot(forest_sub, aes(x=reorder(siteID, soilTemp, mean), y=soilTemp)) +
+  geom_boxplot() + 
+  ylim(c(-1, 35)) +
+  theme(axis.text.x = element_text(angle=45) ) +
+  ggtitle('Forest Soil Temperature Plots')
+g1
+```
+
+```{r}
+forest_sub <- forest %>% 
+  filter(nlcdClass == "deciduousForest") %>% 
+  filter(sampleTiming == "peakGreenness") 
+g1 <- ggplot(forest_sub, aes(x=siteID, y=soilMoisture)) +
+  geom_boxplot() + 
+  ylim(c(-1, 5)) +
+  theme(axis.text.x = element_text(angle=45) ) +
+  ggtitle('Forest Soil Moisture Plots')
+g1
+```
+
+```{r}
+forest_sub <- forest %>% 
+  filter(nlcdClass == "evergreenForest") %>% 
+  filter(sampleTiming == "peakGreenness") 
+g1 <- ggplot(forest_sub, aes(x=siteID, y=soilMoisture)) +
+  geom_boxplot() + 
+  ylim(c(-1, 5)) +
+  theme(axis.text.x = element_text(angle=45) ) +
+  ggtitle('Forest Soil Moisture Plots')
+g1
+```
+
+```{r}
+forest_sub <- forest %>%
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "DCFS", "STER", "CLBJ", "MOAB", "NIWO", "JORN", "WREF", "SJER", "TOOL", "BONA", "PUUM", "ONAQ", "YELL")) %>% 
+  filter(sampleTiming == "peakGreenness") %>% 
+  group_by(siteID, nlcdClass) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilTemp, y=mean_soilMoisture, color = nlcdClass, label = siteID)) + 
+  geom_point() + 
+#  geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+  geom_label_repel(aes(label = siteID),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = 'grey50') +
+  xlim(0, 30) +
+  ylab("Mean Soil Moisture (%) ") +
+  xlab("Mean Soil Temperature (°C)") +
+  facet_wrap(~nlcdClass, ncol = 1) +
+  ggtitle('Soil Moisture x Temperatue Evergreen Forested Plots')
+g1
+```
+
+
+
+
+```{r}
+forest_sub <- forest %>%
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "DCFS", "STER", "CLBJ", "MOAB", "NIWO", "JORN", "WREF", "SJER", "TOOL", "BONA", "PUUM", "ONAQ", "YELL")) %>% 
+  filter(sampleTiming == "peakGreenness") %>% 
+  group_by(siteID, nlcdClass) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilTemp, y=mean_soilMoisture, color = nlcdClass, label = siteID)) + 
+  geom_point() + 
+#  geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+  geom_label_repel(aes(label = siteID),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = 'grey50') +
+  xlim(0, 30) +
+  ylab("Mean Soil Moisture (%) ") +
+  xlab("Mean Soil Temperature (°C)") +
+  facet_wrap(~nlcdClass) +
+  ggtitle('Soil Moisture x Temperatue Evergreen Forested Plots')
+g1
+```
+
+
+```{r}
+forest_sub <- forest %>%
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "DCFS", "STER", "CLBJ", "MOAB", "NIWO", "JORN", "WREF", "SJER", "TOOL", "BONA", "PUUM", "ONAQ", "YELL")) %>% 
+  filter(sampleTiming == "peakGreenness") %>% 
+  filter (collectDate > "2018-01-01" & collectDate <"2018-12-31") %>% 
+  group_by(siteID, nlcdClass) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilTemp, y=mean_soilMoisture, color = nlcdClass, label = siteID)) + 
+  geom_point() + 
+#  geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+  geom_label_repel(aes(label = siteID),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = 'grey50') +
+  xlim(0, 30) +
+  ylab("Mean Soil Moisture (%) ") +
+  xlab("Mean Soil Temperature (°C)") +
+  facet_wrap(~nlcdClass) +
+  ggtitle('Soil Moisture x Temperatue Evergreen Forested Plots in 2018')
+g1
+```
+
+```{r}
+forest_sub <- forest %>%
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "DCFS", "STER", "CLBJ", "MOAB", "NIWO", "JORN", "WREF", "SJER", "TOOL", "BONA", "PUUM", "ONAQ", "YELL")) %>% 
+  filter(sampleTiming == "peakGreenness") %>% 
+  filter (collectDate > "2019-01-01" & collectDate <"2019-12-31") %>% 
+  group_by(siteID, nlcdClass) %>% 
+  summarise(mean_soilMoisture = mean(soilMoisture, na.rm = TRUE),
+            mean_soilTemp = mean(soilTemp, na.rm = TRUE))
+g1 <- ggplot(forest_sub, aes(x=mean_soilTemp, y=mean_soilMoisture, color = nlcdClass, label = siteID)) + 
+  geom_point() + 
+#  geom_text(aes(label=siteID),hjust=-0.2, vjust=0.5) +
+  geom_label_repel(aes(label = siteID),
+                  box.padding   = 0.35, 
+                  point.padding = 0.5,
+                  segment.color = 'grey50') +
+  xlim(0, 30) +
+  ylab("Mean Soil Moisture (%) ") +
+  xlab("Mean Soil Temperature (°C)") +
+  facet_wrap(~nlcdClass) +
+  ggtitle('Soil Moisture x Temperatue Evergreen Forested Plots in 2019')
+g1
+```
+
+
+```{r}
+forest_soildFieldChem_sub_O <- soilFieldChem_down %>%
+  filter(siteID %in%  c("HARV", "SCBI", "JERC", "GUAN", "UNDE", "UKFS", "MLBS", "TALL", "DCFS", "STER", "CLBJ", "MOAB", "NIWO", "JORN", "WREF", "SJER", "TOOL", "BONA", "PUUM", "ONAQ", "YELL")) %>% 
+#  filter(sampleTiming == "peakGreenness") %>% 
+  filter (collectDate > "2018-01-01" & collectDate <"2018-12-31") %>% 
+  filter(horizon.x == "O") %>% 
+  select(siteID, plotID, cnSampleID, organicCPercent, nitrogenPercent, CNratio)
+
+```
+

@@ -38,7 +38,7 @@ Here is an example header code snippet:
 #' @title Give your script a name that describes its purpose
 
 #' @author
-#' Lee Stanish \email{lstanish@battelleecology.org} \cr
+#' Lee Stanish \email{lstanish@gmail.com } \cr
 
 #' @description Add description. Ex. Post-processing script to look more closely at data differences for soil moisture
 

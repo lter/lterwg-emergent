@@ -1,0 +1,74 @@
+---
+title: "Soil Discrete Data Summary Generator"
+author: "Lee Stanish"
+date: "March 20, 2020"
+output: 
+    html_document:
+        toc: true
+        toc_float : true
+        keep_md: true
+---
+
+# For downloading and creating the stack this uses the NEON tutorial at https://www.neonscience.org/resources/learning-hub/tutorials/neondatastackr
+
+```{r}
+
+library(neonUtilities)
+library(plyr)
+library(tidyverse)
+library(xtable)
+library(plotly)
+library(ggrepel)
+
+```
+
+```{r, eval=FALSE}
+zipsByProduct(dpID='DP1.10086.001', check.size=FALSE, package = 'expanded', site = 'all')
+```
+
+```{r, eval=FALSE}
+stackByTable(filepath="/home/jlb/jlb@umass.edu/GoEcology/myGitHub/lterwg-emergent/code/filesToStack10086")
+```
+
+
+
+
+
+# get neonstore data package
+# https://www.rdocumentation.org/packages/neonstore/versions/0.4.4
+
+  
+``` {r}
+soil_fieldBgc_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_bgcSubsampling.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')
+soil_fieldBgc_down <- select(soil_fieldBgc_down, sampleID, cnSampleID, 
+        bgcArchiveID,bgcSampleCondition=sampleCondition, bgcDataQF)
+soil_fieldCore_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_soilCoreCollection.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')
+soil_fieldMoist_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_soilMoisture.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')
+soil_fieldPh_down <- readTableNEON(
+  dataFile='filesToStack10086/stackedFiles/sls_soilpH.csv',
+  varFile='filesToStack10086/stackedFiles/variables_10086.csv')
+
+```
+
+
+```{r}
+# join soil field tables: core collection, moisture, pH, bgc sub-sampling
+soilField_down <- left_join(soil_fieldCore_down, soil_fieldMoist_down, 
+            by=c('sampleID', 'domainID', 'siteID', 'namedLocation', 'plotID', 'collectDate', 'horizon', 'sampleCode') ) %>%
+    select(-uid.x, -uid.y, -samplingProtocolVersion.y)
+soilField_down <- left_join(soilField_down, soil_fieldPh_down, by=c('sampleID', 'sampleCode', 'domainID', 'siteID',
+                                                     'plotID', 'namedLocation', 'collectDate')) %>%
+  select(-uid, -boatMass, -freshMassBoatMass, -dryMassBoatMass, -pHSoilInWaterMass, -pHWaterVol,
+         -pHSoilInCaClMass, -pHCaClVol, -pHSampleID)
+soilField_down <- left_join(soilField_down, soil_fieldBgc_down, by=c('sampleID') )
+```
+
+
+
+

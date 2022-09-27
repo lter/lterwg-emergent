@@ -16,7 +16,6 @@ options(stringsAsFactors = FALSE)
 library(devtools)
 library(plyr)
 library(dplyr)
-library(qdap)
 library(stringr)
 library(xtable)
 library(ggplot2)
@@ -30,22 +29,27 @@ library(neonNTrans)
 # get neonstore data package
 # devtools::install_github("cboettig/neonstore")
 library(neonstore)
+library(qdap)
 
 ```
+
 
 
 # get neonstore data package
 # https://www.rdocumentation.org/packages/neonstore/versions/0.4.4
 
-
-``` {r 'read data from Portal', message=FALSE, results='hide'}
+  
+``` {r 'read data from Portal', message=FALSE, results='hide', eval = FALSE}
 
 # download soil field data #
 soil_fieldL1 <- loadByProduct(dpID='DP1.10086.001', check.size = FALSE, package = 'expanded', site = 'all')
+
+```
+
+```{r}
 soil_fieldBgc <- soil_fieldL1$sls_bgcSubsampling
 # remove unwanted fields
-soil_fieldBgc <- select(soil_fieldBgc, sampleID, cnSampleID, bgcArchiveID,   
-                         bgcSampleCondition=sampleCondition, bgcDataQF)
+soil_fieldBgc <- select(soil_fieldBgc, sampleID, cnSampleID, bgcArchiveID,bgcSampleCondition=sampleCondition, bgcDataQF)
 soil_fieldCore <- soil_fieldL1$sls_soilCoreCollection
 soil_fieldMoist <- soil_fieldL1$sls_soilMoisture
 soil_fieldPh <- soil_fieldL1$sls_soilpH
@@ -85,7 +89,7 @@ soil_chem <- soil_fieldL1$sls_soilChemistry %>%
 #                       kclExt = soil_fieldL1$ntr_externalLab, 
 #                       soilMoist = soil_fieldL1$sls_soilMoisture)
 # remove duplicate records
-soilNtransNoDupes <- soilNtrans[!duplicated(soilNtrans$sampleID)]
+# soilNtransNoDupes <- soilNtrans[!duplicated(soilNtrans$sampleID)]
 
 
 # join soil chem data tables: soil chem, soil isotopes, N transformation
@@ -96,20 +100,22 @@ soilNtransNoDupes <- soilNtrans[!duplicated(soilNtrans$sampleID)]
 # join soil chem and field data tables
 # soilFieldChem <- left_join(soilField, soilChem, by=c('sampleID', 'cnSampleID') )
 soilFieldChem <- left_join(soilField, soil_chem, by=c('sampleID', 'cnSampleID') )
+```
 
 
+```{r}
 # download metagenomics data #
-#soil_mmsL1 <- loadByProduct(dpID='DP1.10107.001', check.size = FALSE,package = 'expanded')
-#soil_mmsRaw <- soil_mmsL1$mms_rawDataFiles
-#soil_mmsSeq <- soil_mmsL1$mms_metagenomeSequencing
-#soil_mmsVars <- soil_mmsL1$variables
+soil_mmsL1 <- loadByProduct(dpID='DP1.10107.001', check.size = FALSE,package = 'expanded')
+soil_mmsRaw <- soil_mmsL1$mms_rawDataFiles
+soil_mmsSeq <- soil_mmsL1$mms_metagenomeSequencing
+soil_mmsVars <- soil_mmsL1$variables
 
 # join metagenomics tables
 # remove duplicate dnaSampleID's from raw sequencing table
-#soil_mmsRawNoDupes <- soil_mmsRaw[!duplicated(soil_mmsRaw$dnaSampleID), ]
-#mmsDat <- left_join(soil_mmsRawNoDupes, soil_mmsSeq, by=c('dnaSampleID', 'domainID', 'siteID', #'namedLocation', 'laboratoryName', 'sequencingFacilityID') ) %>% 
-#  select(-uid.x, -uid.y) %>% 
-#  rename(internalLabIDraw=internalLabID.x, internalLabIDseq=internalLabID.y)
+soil_mmsRawNoDupes <- soil_mmsRaw[!duplicated(soil_mmsRaw$dnaSampleID), ]
+mmsDat <- left_join(soil_mmsRawNoDupes, soil_mmsSeq, by=c('dnaSampleID', 'domainID', 'siteID', 'namedLocation', 'laboratoryName', 'sequencingFacilityID') ) %>%
+  select(-uid.x, -uid.y) %>% 
+  rename(internalLabIDraw=internalLabID.x, internalLabIDseq=internalLabID.y)
 
 
 ## NOTE: To JOIN METAGENOMICS DATA REQUIRES EITHER EXPANDING THE MMS DATA OR AVERAGING THE SOIL FIELD
@@ -385,7 +391,13 @@ g1 <- ggplot(forest_sub, aes(x=mean_soilTemp, y=mean_soilMoisture, color = nlcdC
   xlim(0, 30) +
   ylab("Mean Soil Moisture (%) ") +
   xlab("Mean Soil Temperature (°C)") +
-  facet_wrap(~nlcdClass)
+  facet_wrap(~nlcdClass, ncol = 1) 
 #  ggtitle('Soil Moisture x Temperatue Evergreen Forested Plots')
 g1
 ```
+
+
+
+
+
+
