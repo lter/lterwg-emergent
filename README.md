@@ -18,10 +18,13 @@ https://lternet.edu/current-working-groups/
 
 https://www.nceas.ucsb.edu/projects/12815
 
-## Project Github Repository
+## Github Repositories
 
-https://github.com/lter/lterwg-emergent
+General repo: https://github.com/lter/lterwg-emergent
 
+Website repo: https://github.com/lter/lterwg-emergent-website
+
+Shiny repo: https://github.com/lter/lterwg-emergent-shiny
 
 ## Road map to this Repository (update this section as needed)
 
