@@ -168,7 +168,7 @@ neon_jgi_pilot_ind_bins %>%
 
 #### Site Count Bar chart by Actinobacteriota
 
-```{r, fig.height = 40, echo=FALSE}
+```{r, fig.height = 80, echo=FALSE}
 neon_jgi_pilot_ind_bins %>% 
   filter(Phylum == "Actinobacteriota") %>% 
   group_by(Genus, Site) %>% 
