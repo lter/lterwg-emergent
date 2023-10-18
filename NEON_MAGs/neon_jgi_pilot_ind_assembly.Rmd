@@ -29,7 +29,7 @@ neon_jgi_pilot_ind_bins <- read_csv("neon-jgi_pilot_ind_assembly_bins.csv") %>%
   mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "f__", "") %>% 
   mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "g__", "") %>% 
 #  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "s__", "") %>% 
-  separate(`GTDB-Tk Taxonomy Lineage`, c("Domain", "Phylum", "Class", "Order", "Family", "Genus"), ";") %>% 
+  separate(`GTDB-Tk Taxonomy Lineage`, c("Domain", "Phylum", "Class", "Order", "Family", "Genus"), "; ") %>% 
 # Simplify Site name
   mutate_at("Site", str_replace, "Soil microbial communities from ", "") %>% 
   separate(`Site`, c("Site","Sample Name"), " - ") %>% 
@@ -165,6 +165,22 @@ neon_jgi_pilot_ind_bins %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(~Class, ncol = 1)
 ```
+
+#### Site Count Bar chart by Acidobacteriota
+
+```{r, fig.height = 40, echo=FALSE}
+neon_jgi_pilot_ind_bins %>% 
+  filter(Phylum == "Acidobacteriota") %>% 
+  group_by(Genus, Site) %>% 
+  ggplot(aes(x=Site)) +
+  geom_bar(colour = "maroon", fill = "maroon") +
+  ggtitle("Number of MAGs for each Site") +
+  ylab("Number of MAGs") + 
+  xlab("Phylum") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(~Genus, ncol = 1)
+```
+
 
 #### Histogram of genome sizes
 
