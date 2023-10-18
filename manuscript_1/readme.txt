@@ -1,1 +1,0 @@
-This directory is for the first EMERGENT manuscript
