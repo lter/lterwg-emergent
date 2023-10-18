@@ -166,11 +166,11 @@ neon_jgi_pilot_ind_bins %>%
   facet_wrap(~Class, ncol = 1)
 ```
 
-#### Site Count Bar chart by Acidobacteriota
+#### Site Count Bar chart by Actinobacteriota
 
 ```{r, fig.height = 40, echo=FALSE}
 neon_jgi_pilot_ind_bins %>% 
-  filter(Phylum == "Acidobacteriota") %>% 
+  filter(Phylum == "Actinobacteriota") %>% 
   group_by(Genus, Site) %>% 
   ggplot(aes(x=Site)) +
   geom_bar(colour = "maroon", fill = "maroon") +
