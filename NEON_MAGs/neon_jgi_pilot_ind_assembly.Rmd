@@ -166,7 +166,7 @@ neon_jgi_pilot_ind_bins %>%
   facet_wrap(~Class, ncol = 1)
 ```
 
-#### Site Count Bar chart by Actinobacteriota
+#### Site Count Bar chart by Actinobacteriota Genus
 
 ```{r, fig.height = 80, echo=FALSE}
 neon_jgi_pilot_ind_bins %>% 
@@ -182,7 +182,38 @@ neon_jgi_pilot_ind_bins %>%
 ```
 
 
+#### Phylum Count Bar chart by layer
+
+```{r, fig.height = 5, echo=FALSE}
+neon_jgi_pilot_ind_bins %>% 
+  group_by(Phylum, Layer) %>% 
+  ggplot(aes(x=Phylum)) +
+  geom_bar(colour = "maroon", fill = "maroon") +
+  ggtitle("Number of MAGs for each Phylum") +
+  ylab("Number of MAGs") + 
+  xlab("Phylum") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(~Layer, ncol = 1)
+```
+
+
+#### Class Count Bar chart by layer
+
+```{r, fig.height = 5, echo=FALSE}
+neon_jgi_pilot_ind_bins %>% 
+  group_by(Class, Layer) %>% 
+  ggplot(aes(x=Class)) +
+  geom_bar(colour = "maroon", fill = "maroon") +
+  ggtitle("Number of MAGs for each Class") +
+  ylab("Number of MAGs") + 
+  xlab("Class") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(~Layer, ncol = 1)
+```
+
+
 #### Histogram of genome sizes
+
 
 ```{r}
 neon_jgi_pilot_ind_bins %>% 
