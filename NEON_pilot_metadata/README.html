@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.1.251">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>readme</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="README_files/libs/clipboard/clipboard.min.js"></script>
+<script src="README_files/libs/quarto-html/quarto.js"></script>
+<script src="README_files/libs/quarto-html/popper.min.js"></script>
+<script src="README_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="README_files/libs/quarto-html/anchor.min.js"></script>
+<link href="README_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="README_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="README_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="README_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="README_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+<section id="neon-metadata-from-pilot-study-with-jgi" class="level1">
+<h1>NEON metadata from pilot study with JGI</h1>
+<p>This folder contains metadata tables for the samples sequenced and analyzed by JGI for a pilot study in 2023. Additional metadata will be added soon. For each new set of data, tables at both the plot and subplot levels will be added, where possible. General site level information will also be added soon. Also included are descriptions of each of the fields in the respective tables</p>
+<p><strong>Plot and subplot level data</strong></p>
+<p>As NEON metagenomic samples are combined from 1-3 individual samples in a plot (per horizon), the metagenomic sample is presented as a plot-level sample. Most soil measurements are taken from individual samples, therefore to assign a soil measure to the metagenomic sample requires averaging across the measurements of the individual soil samples. Also included in this folder are individual soil measurements for every sample that is used in a composite sample (with the corresponding plot-level composite sample included in the table for reference). For some NEON data products, information is only available at the plot level, and for these only the plot table will be included.</p>
+<section id="data-sets-included" class="level2">
+<h2 class="anchored" data-anchor-id="data-sets-included">Data sets included</h2>
+<p>Following are brief descriptions of each of the data sets that are being added, along with links for more information. To search for any data products, visit the <a href="https://data.neonscience.org/data-products/explore">NEON Data Portal</a>.</p>
+<section id="soil-physical-and-chemical-properties-periodic-dp1.10086.001" class="level3">
+<h3 class="anchored" data-anchor-id="soil-physical-and-chemical-properties-periodic-dp1.10086.001">Soil physical and chemical properties, periodic (DP1.10086.001)</h3>
+<p>Soil physical and chemical properties from the top 30 cm of the profile from periodic soil core collections. Data are reported by horizon (mineral vs.&nbsp;organic). See initial characterization and megapit products for additional soil data.</p>
+<p>For more information: <a href="https://data.neonscience.org/data-products/DP1.10086.001">https://data.neonscience.org/data-products/DP1.10086.001</a></p>
+<p>Tables included:</p>
+<ul>
+<li>neon_soilChem1_metadata_descriptions.tsv <em>descriptions of all fields used in the tables</em></li>
+<li>neon_plot_soilChem1_metadata.tsv <em>soil measurements for composite metagenomic samples, measures averaged across all individual samples</em></li>
+<li>neon_subplot_soilChem1_metadata.tsv <em>soil measurements for individual samples that compose each metagenomic composite sample</em></li>
+</ul>
+<p>Notes: to average pH measurements, the R <code>mean_pH</code> function from the <code>respirometry</code> package was used.</p>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
