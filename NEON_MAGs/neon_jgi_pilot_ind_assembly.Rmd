@@ -12,7 +12,22 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(DT)
+library(ggsankey)
 ```
+
+
+### Make input for for Pavian Sankey Plot
+
+```{r}
+neon_jgi_pilot_ind_pavian <- read_csv("neon-jgi_pilot_ind_assembly_bins.csv")  %>% 
+  select(`GTDB-Tk Taxonomy Lineage`) %>% 
+  mutate(`GTDB-Tk Taxonomy Lineage` = as.factor(`GTDB-Tk Taxonomy Lineage`)) %>% 
+  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace_all, "; ", "\\|") %>% 
+  count(`GTDB-Tk Taxonomy Lineage`) 
+
+write_tsv(neon_jgi_pilot_ind_pavian, "neon_jgi_pilot_ind_pavian.tsv")
+```
+
 
 
 ```{r}
@@ -22,12 +37,12 @@ neon_jgi_pilot_ind_bins <- read_csv("neon-jgi_pilot_ind_assembly_bins.csv") %>%
   rename(`Completeness` = `Bin Completeness`) %>% 
   rename(`Contamination` = `Bin Contamination`) %>% 
   rename(`Site` = `Genome Name`) %>% 
-  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "d__", "") %>% 
-  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "p__", "") %>% 
-  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "c__", "") %>% 
-  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "o__", "") %>% 
-  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "f__", "") %>% 
-  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "g__", "") %>% 
+#  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "d__", "") %>% 
+#  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "p__", "") %>% 
+#  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "c__", "") %>% 
+#  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "o__", "") %>% 
+#  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "f__", "") %>% 
+#  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "g__", "") %>% 
 #  mutate_at("GTDB-Tk Taxonomy Lineage", str_replace, "s__", "") %>% 
   separate(`GTDB-Tk Taxonomy Lineage`, c("Domain", "Phylum", "Class", "Order", "Family", "Genus"), "; ") %>% 
 # Simplify Site name
@@ -36,9 +51,10 @@ neon_jgi_pilot_ind_bins <- read_csv("neon-jgi_pilot_ind_assembly_bins.csv") %>%
   mutate_at("Sample Name", str_replace, "-comp-1", "") %>%
   separate(`Sample Name`, c("Site ID","subplot.layer.date"), "_", remove = FALSE,) %>% 
   separate(`subplot.layer.date`, c("Subplot", "Layer", "Date"), "-",) 
-
-
 ```
+
+
+
 ```{r}
 write_tsv(neon_jgi_pilot_ind_bins, "neon_jgi_pilot_ind_bins.tsv")
 ```
@@ -71,8 +87,29 @@ datatable(neon_jgi_pilot_ind_bins %>%
   summarise(n = n()) 
 )
 ```
+### Tables of Abundant Genera (a glimpse of possible shared genomes)
+#### Mycobacterium
+```{r, fig.height = 80, echo=FALSE}
+datatable(
+  neon_jgi_pilot_ind_bins %>% 
+  select(`Bin ID`, Site, `Sample Name`, Genus) %>% 
+  filter(Genus == "Mycobacterium")
+)
+```
+#### Palsa-744
 
-## Graphs
+```{r, fig.height = 80, echo=FALSE}
+datatable(
+  neon_jgi_pilot_ind_bins %>% 
+  select(`Bin ID`, Site, `Sample Name`, Genus) %>% 
+  filter(Genus == "Palsa-744")
+)
+```
+
+
+
+
+
 
 #### Phyla bar chart
 
@@ -111,6 +148,49 @@ neon_jgi_pilot_ind_bins %>%
   ggtitle("Number of MAGs for each Class") +
   ylab("Number of MAGs") + 
   xlab("Class")
+```
+
+#### Phylum Count Bar chart by layer
+
+```{r, fig.height = 5, echo=FALSE}
+neon_jgi_pilot_ind_bins %>% 
+  group_by(Phylum, Layer) %>% 
+  ggplot(aes(x=Phylum)) +
+  geom_bar(colour = "maroon", fill = "maroon") +
+  ggtitle("Number of MAGs for each Phylum") +
+  ylab("Number of MAGs") + 
+  xlab("Phylum") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(~Layer, ncol = 1)
+```
+
+
+#### Class Count Bar chart by layer
+
+```{r, fig.height = 5, echo=FALSE}
+neon_jgi_pilot_ind_bins %>% 
+  group_by(Class, Layer) %>% 
+  ggplot(aes(x=Class)) +
+  geom_bar(colour = "maroon", fill = "maroon") +
+  ggtitle("Number of MAGs for each Class") +
+  ylab("Number of MAGs") + 
+  xlab("Class") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_wrap(~Layer, ncol = 1)
+```
+
+
+#### Histogram of genome sizes
+
+
+```{r}
+neon_jgi_pilot_ind_bins %>% 
+ggplot(aes(x = `Total Number of Bases`)) + 
+  geom_histogram(colour = "black", fill = "maroon", binwidth=500000) +
+  ggtitle("Genome size of MAGs") +
+  ylab("Genome size") + 
+  theme(text = element_text(size = 20, color="black"))
+#  theme(axis.text.x = element_text(angle = 90)) 
 ```
 
 #### Phylum Count Bar chart by site
@@ -182,45 +262,3 @@ neon_jgi_pilot_ind_bins %>%
 ```
 
 
-#### Phylum Count Bar chart by layer
-
-```{r, fig.height = 5, echo=FALSE}
-neon_jgi_pilot_ind_bins %>% 
-  group_by(Phylum, Layer) %>% 
-  ggplot(aes(x=Phylum)) +
-  geom_bar(colour = "maroon", fill = "maroon") +
-  ggtitle("Number of MAGs for each Phylum") +
-  ylab("Number of MAGs") + 
-  xlab("Phylum") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  facet_wrap(~Layer, ncol = 1)
-```
-
-
-#### Class Count Bar chart by layer
-
-```{r, fig.height = 5, echo=FALSE}
-neon_jgi_pilot_ind_bins %>% 
-  group_by(Class, Layer) %>% 
-  ggplot(aes(x=Class)) +
-  geom_bar(colour = "maroon", fill = "maroon") +
-  ggtitle("Number of MAGs for each Class") +
-  ylab("Number of MAGs") + 
-  xlab("Class") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  facet_wrap(~Layer, ncol = 1)
-```
-
-
-#### Histogram of genome sizes
-
-
-```{r}
-neon_jgi_pilot_ind_bins %>% 
-ggplot(aes(x = `Total Number of Bases`)) + 
-  geom_histogram(colour = "black", fill = "maroon", binwidth=500000) +
-  ggtitle("Genome size of MAGs") +
-  ylab("Genome size") + 
-  theme(text = element_text(size = 20, color="black"))
-#  theme(axis.text.x = element_text(angle = 90)) 
-```
