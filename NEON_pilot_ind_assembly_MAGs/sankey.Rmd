@@ -11,8 +11,12 @@ library(tidyverse)
 
 # Pavian Sankey Plot
 
-[Pavian Github](https://github.com/fbreitwieser/pavian)
-Upload the resulting file to [Pavian Shiny](https://fbreitwieser.shinyapps.io/pavian/)
+* [Pavian Github](https://github.com/fbreitwieser/pavian)
+* Upload the resulting file to [Pavian Shiny](https://fbreitwieser.shinyapps.io/pavian/)
+* Generate html report
+* Click on Sample then Configure sankey
+* Adjust the graph and the save network
+* Caitlin Singleton used a html to svg converter (https://www.hiqpdf.com/demo/ConvertHtmlToSvg.aspx) with aesthetic tweaks in inkscape. 
 
 ## Make input for for Pavian Sankey Plot (from GTDB format)
 
@@ -48,6 +52,10 @@ NEB_coassembly_GTDB_allTaxa <- bind_rows(NEB_coassembly_GTDB_s, NEB_coassembly_G
 write_tsv(NEB_coassembly_GTDB_allTaxa, "NEB_coassembly_GTDB_pavian.txt")
 ```
 
+[Interactive HTML file with Pavian Sankey Plot for NEB filter metagenomes](sankey-NEB_coassembly_GTDB_pavian.html)
+
+![Pavian Sankey Plot for NEB filter metagenomes](sankey-NEB_coassembly_GTDB_pavian.png)
+
 
 ## Make input for for Pavian Sankey Plot (from IMG format for GTDB taxonomy
 
@@ -58,17 +66,21 @@ neon_jgi_pilot_ind_GTDB <- read_csv("neon-jgi_pilot_ind_assembly_bins.csv") %>%
   # NAs are likely Archaea
   replace_na(list(`GTDB-Tk Taxonomy Lineage` = 'Archaea')) %>% 
   # Pavian format requires p__ etc
-  separate(`GTDB-Tk Taxonomy Lineage`, c("Domain", "Phylum", "Class", "Order", "Family", "Genus"), "; ") %>% 
-  unite(col = "classification", c(Domain, Phylum, Class, Order, Family, Genus), sep='; ') %>% 
+  separate(`GTDB-Tk Taxonomy Lineage`, c("Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"), "; ") %>% 
+  unite(col = "classification", c(Domain, Phylum, Class, Order, Family, Genus, Species), sep='; ') %>% 
   mutate_at("classification", str_replace, "Archaea", "d__Archaea") %>% 
   mutate_at("classification", str_replace, "Bacteria", "d__Bacteria") %>%  
   mutate_at("classification", str_replace, "; ", "|p__") %>% 
   mutate_at("classification", str_replace, "; ", "|c__") %>% 
   mutate_at("classification", str_replace, "; ", "|o__") %>% 
   mutate_at("classification", str_replace, "; ", "|f__") %>% 
-  mutate_at("classification", str_replace, "; ", "|g__") 
+  mutate_at("classification", str_replace, "; ", "|g__") %>% 
+  mutate_at("classification", str_replace, "; ", "|s__") %>% 
+  mutate_at("classification", str_replace_all, "NA", "") 
+  
 
 # Create format for Pavian with counts for each taxonomic level
+neon_jgi_pilot_ind_GTDB_s <- neon_jgi_pilot_ind_GTDB
 neon_jgi_pilot_ind_GTDB_g <- neon_jgi_pilot_ind_GTDB
 neon_jgi_pilot_ind_GTDB_f <- neon_jgi_pilot_ind_GTDB
 neon_jgi_pilot_ind_GTDB_o <- neon_jgi_pilot_ind_GTDB
@@ -83,7 +95,7 @@ neon_jgi_pilot_ind_GTDB_c$classification <- sub("\\|o__.*", "", neon_jgi_pilot_i
 neon_jgi_pilot_ind_GTDB_p$classification <- sub("\\|c__.*", "", neon_jgi_pilot_ind_GTDB_p$classification)  
 neon_jgi_pilot_ind_GTDB_d$classification <- sub("\\|p__.*", "", neon_jgi_pilot_ind_GTDB_d$classification)  
 
-neon_jgi_pilot_ind_GTDB_allTaxa <- bind_rows(neon_jgi_pilot_ind_GTDB_g, neon_jgi_pilot_ind_GTDB_f, neon_jgi_pilot_ind_GTDB_o, neon_jgi_pilot_ind_GTDB_c, neon_jgi_pilot_ind_GTDB_p, neon_jgi_pilot_ind_GTDB_d) %>% 
+neon_jgi_pilot_ind_GTDB_allTaxa <- bind_rows(neon_jgi_pilot_ind_GTDB_s, neon_jgi_pilot_ind_GTDB_g, neon_jgi_pilot_ind_GTDB_f, neon_jgi_pilot_ind_GTDB_o, neon_jgi_pilot_ind_GTDB_c, neon_jgi_pilot_ind_GTDB_p, neon_jgi_pilot_ind_GTDB_d) %>% 
   mutate(classification = as.factor(classification)) %>% 
   count(classification) %>% 
 # rename for Pavian format
@@ -94,6 +106,10 @@ neon_jgi_pilot_ind_GTDB_allTaxa <- bind_rows(neon_jgi_pilot_ind_GTDB_g, neon_jgi
 ```{r}
 write_tsv(neon_jgi_pilot_ind_GTDB_allTaxa, "neon_jgi_pilot_ind_GTDB_pavian.txt")
 ```
+
+[Interactive HTML file with Pavian Sankey Plot for NEON-JGI pilot](sankey-neon_jgi_pilot_ind_GTDB_pavian.html)
+
+![Pavian Sankey Plot for NEON-JGI pilot](sankey-neon_jgi_pilot_ind_GTDB_pavian.png)
 
 # ggsankey
 
