@@ -16,7 +16,7 @@ library(tidyverse)
 * Generate html report
 * Click on Sample then Configure sankey
 * Adjust the graph and the save network
-* Caitlin Singleton used a html to svg converter (https://www.hiqpdf.com/demo/ConvertHtmlToSvg.aspx) with aesthetic tweaks in inkscape. 
+* Caitlin Singleton used a html to svg converter (https://www.hiqpdf.com/demo/ConvertHtmlToSvg.aspx) with aesthetic tweaks in inkscape. * Pavian doesn't do empty species or genus names (e.g. g__s__). Delete those fields in the file or in inkscape. To show them, create denovo genera and species names so they are unique and cluster appropriately.
 
 ## Make input for for Pavian Sankey Plot (from GTDB format)
 
