@@ -260,5 +260,30 @@ neon_jgi_pilot_ind_bins %>%
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   facet_wrap(~Genus, ncol = 1)
 ```
+## Bubble plots phylum
+```{r, fig.height = 10, echo=FALSE}
+neon_jgi_pilot_ind_bins %>% 
+  group_by(Class, Site) %>% 
+  summarise(MAGs = n()) %>%
+  ggplot(aes(x=Site, y=Class, size=MAGs)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("Number of MAGs for each Class at each site ") +
+  ylab("Class") + 
+  xlab("Site") +
+  theme(axis.text.x = element_text(angle =90, vjust = 0.5, hjust=1)) 
+```
 
+#### Site Count Bar chart by Actinobacteriota Genus
 
+```{r, fig.height = 20, echo=FALSE}
+neon_jgi_pilot_ind_bins %>% 
+  filter(Phylum == "Actinobacteriota") %>% 
+  group_by(Genus, Site) %>% 
+  summarise(MAGs = n()) %>%
+  ggplot(aes(x=Site, y=Genus, size=MAGs)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("Number of MAGs for each Actinobacteriota genus at each site ") +
+  ylab("Genus") + 
+  xlab("Site") +
+  theme(axis.text.x = element_text(angle =90, vjust = 0.5, hjust=1)) 
+```
