@@ -1,0 +1,100 @@
+---
+title: "MetaG"
+author: "Jeffrey Blanchard"
+date: "2024-01-05"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+library(fs)
+library(stringi)
+library(broom)
+library(DT)
+library(readxl)
+```
+
+# Downloading soil MAGs from IMG
+
+Go to IMG  https://img.jgi.doe.gov/mer/  In the menu under `Find Genomes` select  `metagenome bins` then `bins by ecosystem`.  On the graph select `Terrestrail` then `Soil`. Select an Ecosystem subtype then in then display the list of MAGs for the subtype by clicking on the arrows. Once the table is displayed click `Select All` and then `Export`.  Note that if eukcc bins exist there are tabs present for both the bacterial and eukaryotic MAGs
+
+## Bacterial and Archaeal MAGs
+```{r, message=FALSE, warning=FALSE}
+# define directory with files
+data_dir <- "metabat"
+
+# get list of files for checkM
+bin_files <- fs::dir_ls(data_dir, regexp = "IMG")
+
+# import files into a tibble 
+bin_all <- bin_files %>% 
+  map_dfr(read_excel, .id = "file") %>% 
+  select(-`...1`)
+```
+
+```{r}
+write_tsv(bin_all, "IMG_Terrestrail_Soil_MAGs.tsv")
+```
+
+## Try to get a list of projects and number of MAGs
+### MAGs for each sample
+
+```{r}
+bin_files_site_genome_name <- bin_all %>% 
+  group_by(`Genome Name`) %>% 
+  summarise(MAGs = n()) 
+```
+
+### MAGs per project try #1
+```{r}
+bin_files_project <- bin_all %>% 
+  separate(`Genome Name`, c("Project","Sample Name"), " - ") %>% 
+  group_by(`Project`) %>% 
+  summarise(MAGs = n()) 
+```
+
+### MAGs per project try #1
+```{r}
+bin_files_project2 <- bin_all %>% 
+  separate(`Genome Name`, c("Project1","Sample Name"), " - ") %>%   
+  separate(`Project1`, c("Project","Sample Name"), "\\(Sample") %>% 
+  group_by(`Project`) %>% 
+  summarise(MAGs = n())
+```
+
+```{r}
+write_tsv(bin_files_project2, "IMG_Terrestrail_Soil_projects.tsv")
+```
+
+## Eukaryotes (EukCC)
+```{r, message=FALSE, warning=FALSE}
+# define directory with files
+data_dir <- "eukcc"
+
+# get list of files for checkM
+eukcc_bin_files <- fs::dir_ls(data_dir, regexp = "IMG")
+
+# import files into a tibble 
+eukcc_bin_all <- eukcc_bin_files %>% 
+  map_dfr(read_excel, .id = "file") %>% 
+  select(-`...1`)
+```
+
+```{r}
+write_tsv(eukcc_bin_all, "IMG_Terrestrail_Soil_eukcc.tsv")
+```
+
+### MAGs per project try #1
+```{r}
+eukcc_bin_all_project2 <- eukcc_bin_all %>% 
+  separate(`Genome Name`, c("Project1","Sample Name"), " - ") %>%   
+  separate(`Project1`, c("Project","Sample Name"), "\\(Sample") %>% 
+  group_by(`Project`) %>% 
+  summarise(MAGs = n())
+```
+
+```{r}
+write_tsv(eukcc_bin_all_project2, "IMG_Terrestrail_Soil_eukcc_projects.tsv")
+```

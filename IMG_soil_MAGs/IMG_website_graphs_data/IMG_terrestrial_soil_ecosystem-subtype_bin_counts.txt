@@ -1,0 +1,37 @@
+Ecosystem_subtype	bins
+Agricultural land	3453
+Biochar	5
+Biocrust	7
+Boreal forest/Taiga	212
+Botanical garden	12
+Clay	4
+Coastal area	142
+Contaminated	228
+Desert	368
+Floodplain	227
+Garden	16
+Glacial till	3529
+Glacier	219
+Grasslands	896
+Greenhouse	11
+Loam	9
+Paddy field/soil	49
+Palsa	86
+Pasture	77
+Peat	3860
+Ranch	35
+Riparian zone	156
+Sand	180
+Shrubland	60
+Soil crust	131
+Sub-biocrust	11
+Tailings	5
+Temperate forest	3175
+Tree plantation	95
+Tropical forest	655
+Tundra	247
+Unclassified	3716
+Vadose zone	76
+Watershed	511
+Wetlands	9337
+
