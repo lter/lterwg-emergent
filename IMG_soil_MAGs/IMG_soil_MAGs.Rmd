@@ -26,47 +26,89 @@ Go to IMG  https://img.jgi.doe.gov/mer/  In the menu under `Find Genomes` select
 data_dir <- "metabat"
 
 # get list of files for checkM
-bin_files <- fs::dir_ls(data_dir, regexp = "IMG")
+IMG_metabat_files <- fs::dir_ls(data_dir, regexp = "IMG")
 
 # import files into a tibble 
-bin_all <- bin_files %>% 
+IMG_metabat_all <- IMG_metabat_files %>% 
   map_dfr(read_excel, .id = "file") %>% 
   select(-`...1`)
 ```
 
-```{r}
-write_tsv(bin_all, "IMG_Terrestrail_Soil_MAGs.tsv")
-```
 
-## Try to get a list of projects and number of MAGs
-### MAGs for each sample
-
+### Reformat data frame for taxonomy and ecosystem analyses
 ```{r}
-bin_files_site_genome_name <- bin_all %>% 
-  group_by(`Genome Name`) %>% 
-  summarise(MAGs = n()) 
-```
-
-### MAGs per project try #1
-```{r}
-bin_files_project <- bin_all %>% 
-  separate(`Genome Name`, c("Project","Sample Name"), " - ") %>% 
-  group_by(`Project`) %>% 
-  summarise(MAGs = n()) 
-```
-
-### MAGs per project try #1
-```{r}
-bin_files_project2 <- bin_all %>% 
-  separate(`Genome Name`, c("Project1","Sample Name"), " - ") %>%   
+IMG_metabat_analysis <- IMG_metabat_all %>% 
+  separate(`Genome Name`, c("Project1","Sample Name1"), " - ", remove = FALSE,) %>%   
+  select(-"Sample Name1") %>% 
   separate(`Project1`, c("Project","Sample Name"), "\\(Sample") %>% 
+  select(-"Sample Name") %>% 
+  separate(Ecosystem, c("Ecosystem", "Ecosystem Category", "Ecosystem Type", "Ecosystem Subtype", "Specific Ecosystem")) %>% 
+  separate(`GTDB-Tk Taxonomy Lineage`, c("Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"), "; ", remove = FALSE,) 
+```
+
+```{r, eval=FALSE}
+write_tsv(IMG_metabat_analysis, "IMG_Terrestrail_Soil_metabat.tsv")
+```
+
+### Create a list of projects
+```{r}
+IMG_metabat_analysis_project <- IMG_metabat_analysis %>% 
   group_by(`Project`) %>% 
   summarise(MAGs = n())
 ```
 
-```{r}
-write_tsv(bin_files_project2, "IMG_Terrestrail_Soil_projects.tsv")
+```{r, eval=FALSE}
+write_tsv(IMG_metabat_analysis_project, "IMG_Terrestrail_Soil_metabat_projects.tsv")
 ```
+
+### Wrangle GTDB taxonomy to include unknowns in taxonomic analysis ()
+
+```{r}
+IMG_metabat_analysis_GTDB <- IMG_metabat_analysis %>% 
+  select(`GTDB-Tk Taxonomy Lineage`) %>% 
+  separate(`GTDB-Tk Taxonomy Lineage`, c("Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"), "; ") %>% 
+  unite(col = "classification", c(Domain, Phylum, Class, Order, Family, Genus, Species), sep='; ') %>% 
+  mutate_at("classification", str_replace, "Archaea", "d__Archaea") %>% 
+  mutate_at("classification", str_replace, "Bacteria", "d__Bacteria") %>%  
+  mutate_at("classification", str_replace, "; ", "|p__") %>% 
+  mutate_at("classification", str_replace, "; ", "|c__") %>% 
+  mutate_at("classification", str_replace, "; ", "|o__") %>% 
+  mutate_at("classification", str_replace, "; ", "|f__") %>% 
+  mutate_at("classification", str_replace, "; ", "|g__") %>% 
+  mutate_at("classification", str_replace, "; ", "|s__") %>% 
+  mutate_at("classification", str_replace_all, "NA", "")
+
+# Create separate data frame for each taxonomic level
+IMG_metabat_analysis_GTDB_s <- IMG_metabat_analysis_GTDB
+IMG_metabat_analysis_GTDB_g <- IMG_metabat_analysis_GTDB
+IMG_metabat_analysis_GTDB_f <- IMG_metabat_analysis_GTDB
+IMG_metabat_analysis_GTDB_o <- IMG_metabat_analysis_GTDB
+IMG_metabat_analysis_GTDB_c <- IMG_metabat_analysis_GTDB
+IMG_metabat_analysis_GTDB_p <- IMG_metabat_analysis_GTDB
+IMG_metabat_analysis_GTDB_d <- IMG_metabat_analysis_GTDB
+
+# Remove lower taxonomic levels
+IMG_metabat_analysis_GTDB_g$classification <- sub("\\|s__.*", "", IMG_metabat_analysis_GTDB_g$classification)  
+IMG_metabat_analysis_GTDB_f$classification <- sub("\\|g__.*", "", IMG_metabat_analysis_GTDB_f$classification)  
+IMG_metabat_analysis_GTDB_o$classification <- sub("\\|f__.*", "", IMG_metabat_analysis_GTDB_o$classification)  
+IMG_metabat_analysis_GTDB_c$classification <- sub("\\|o__.*", "", IMG_metabat_analysis_GTDB_c$classification)  
+IMG_metabat_analysis_GTDB_p$classification <- sub("\\|c__.*", "", IMG_metabat_analysis_GTDB_p$classification)  
+IMG_metabat_analysis_GTDB_d$classification <- sub("\\|p__.*", "", IMG_metabat_analysis_GTDB_d$classification)  
+
+# bind data frames by columns and with original dataframe
+IMG_metabat_analysis_GTDB_unknowns <- bind_cols(IMG_metabat_analysis, IMG_metabat_analysis_GTDB_d, IMG_metabat_analysis_GTDB_p, IMG_metabat_analysis_GTDB_c, IMG_metabat_analysis_GTDB_o, IMG_metabat_analysis_GTDB_f, IMG_metabat_analysis_GTDB_g, IMG_metabat_analysis_GTDB_s) %>% 
+  rename(`Domain_novel` = `classification...33`) %>% 
+  rename(`Phylum_novel` = `classification...34`) %>% 
+  rename(`Class_novel` = `classification...35`) %>% 
+  rename(`Order_novel` = `classification...36`) %>% 
+  rename(`Family_novel` = `classification...37`) %>% 
+  rename(`Genus_novel` = `classification...38`) %>% 
+  rename(`Species_novel` = `classification...39`)
+
+# clean up environment
+# rm(IMG_metabat_analysis_GTDB_s, IMG_metabat_analysis_GTDB_g, IMG_metabat_analysis_GTDB_f, IMG_metabat_analysis_GTDB_o, IMG_metabat_analysis_GTDB_c, IMG_metabat_analysis_GTDB_p, IMG_metabat_analysis_GTDB_d, IMG_metabat_analysis_GTDB)
+```
+
 
 ## Eukaryotes (EukCC)
 ```{r, message=FALSE, warning=FALSE}
@@ -77,24 +119,106 @@ data_dir <- "eukcc"
 eukcc_bin_files <- fs::dir_ls(data_dir, regexp = "IMG")
 
 # import files into a tibble 
-eukcc_bin_all <- eukcc_bin_files %>% 
+eukcc_all <- eukcc_bin_files %>% 
   map_dfr(read_excel, .id = "file") %>% 
   select(-`...1`)
 ```
 
+### Reformat data frame for taxonomy and ecosystem analyses
 ```{r}
+eukcc_analysis <- eukcc_all %>% 
+  separate(`Genome Name`, c("Project1","Sample Name1"), " - ", remove = FALSE,) %>%   
+  select(-"Sample Name1") %>% 
+  separate(`Project1`, c("Project","Sample Name"), "\\(Sample") %>% 
+  select(-"Sample Name") %>% 
+  separate(Ecosystem, c("Ecosystem", "Ecosystem Category", "Ecosystem Type", "Ecosystem Subtype", "Specific Ecosystem")) %>% 
+  # Eukaryota; Ascomycota; Leotiomycetes; Helotiales; Hyaloscyphaceae; Hyaloscypha
+  separate(`Bin Lineage`, c("Domain", "Phylum", "Class", "Order", "Family", "Genus"), "; ", remove = FALSE,) 
+```
+
+```{r, eval=FALSE}
 write_tsv(eukcc_bin_all, "IMG_Terrestrail_Soil_eukcc.tsv")
 ```
 
 ### MAGs per project try #1
 ```{r}
-eukcc_bin_all_project2 <- eukcc_bin_all %>% 
-  separate(`Genome Name`, c("Project1","Sample Name"), " - ") %>%   
-  separate(`Project1`, c("Project","Sample Name"), "\\(Sample") %>% 
+eukcc_all_project <- eukcc_analysis %>% 
   group_by(`Project`) %>% 
   summarise(MAGs = n())
 ```
 
-```{r}
-write_tsv(eukcc_bin_all_project2, "IMG_Terrestrail_Soil_eukcc_projects.tsv")
+```{r, eval=FALSE}
+write_tsv(eukcc_all_project, "IMG_Terrestrail_Soil_eukcc_projects.tsv")
 ```
+
+
+## Graphs
+
+### Metabat
+Some MAGs have no GTDB annotation
+#### Domain bar chart
+
+```{r, echo=FALSE, fig.height=2}
+IMG_metabat_analysis %>% 
+  count(Domain, sort = TRUE) %>% 
+  filter(Domain != "NA") %>% 
+  ggplot(aes(x=reorder(Domain, n), y = n)) +
+  geom_col(colour = "maroon", fill = "maroon") +
+  coord_flip()+
+  ggtitle("Number of MAGs for each Domain") +
+  ylab("Number of MAGs") + 
+  xlab("Domain")
+```
+
+
+#### Phyla bar chart
+
+```{r, echo=FALSE, fig.height=20}
+IMG_metabat_analysis %>% 
+  count(Phylum, sort = TRUE) %>% 
+  filter(Phylum != "NA") %>% 
+  ggplot(aes(x=reorder(Phylum, n), y = n)) +
+  geom_col(colour = "maroon", fill = "maroon") +
+  coord_flip()+
+  ggtitle("Number of MAGs for each Phylum") +
+  ylab("Number of MAGs") + 
+  xlab("Phylum")
+```
+
+```{r, echo=FALSE, fig.height=20}
+IMG_metabat_analysis %>% 
+  ggplot(aes(x=Phylum, fill = `Ecosystem Subtype`))+
+  geom_bar() +
+  coord_flip()+
+  ggtitle("Number of MAGs for each Phylum") +
+  ylab("Number of MAGs") + 
+  xlab("Phylum")
+```
+
+
+
+###  Pavian Sankey Plot
+
+* [Pavian Github](https://github.com/fbreitwieser/pavian)
+* Upload the resulting file to [Pavian Shiny](https://fbreitwieser.shinyapps.io/pavian/)
+* Generate html report
+* Click on Sample then Configure sankey
+* Adjust the graph and the save network
+* Caitlin Singleton used a html to svg converter (https://www.hiqpdf.com/demo/ConvertHtmlToSvg.aspx) with aesthetic tweaks in inkscape. * Pavian doesn't do empty species or genus names (e.g. g__s__). Delete those fields in the file or in inkscape. To show them, create denovo genera and species names so they are unique and cluster appropriately.
+
+
+```{r}
+IMG_metabat_analysis_GTDB_allTaxa <- bind_rows(IMG_metabat_analysis_GTDB_s, IMG_metabat_analysis_GTDB_g, IMG_metabat_analysis_GTDB_f, IMG_metabat_analysis_GTDB_o, IMG_metabat_analysis_GTDB_c, IMG_metabat_analysis_GTDB_p, IMG_metabat_analysis_GTDB_d) %>% 
+  mutate(classification = as.factor(classification)) %>% 
+  count(classification) %>% 
+# rename for Pavian format
+  rename(`#SampleID` = `classification`) %>% 
+  rename(`Metaphlan2_Analysis` = `n`) 
+```
+
+```{r}
+write_tsv(IMG_metabat_analysis_GTDB_allTaxa, "IMG_metabat_analysis_GTDB_pavian.txt")
+```
+
+[Interactive HTML file with Pavian Sankey Plot for soil metabat bins](sankey-IMG_metabat_analysis_GTDB_pavian.txt.html)
+
