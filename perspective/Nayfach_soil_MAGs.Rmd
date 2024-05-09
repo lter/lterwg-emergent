@@ -1,15 +1,10 @@
 ---
-title: "Insights into soil MAGS in the Nayfach et al GEM catalog"
+title: "Insights into soil MAGS from the Nayfach et al GEM catalog"
 author: "Jeffrey Blanchard"
 output:
   html_document:
     highlight: tango
     theme: united
-    toc: yes
-    toc_depth: 3
-  pdf_document:
-    toc: yes
-    toc_depth: '3'
 editor_options: 
   chunk_output_type: console
 ---
@@ -20,6 +15,8 @@ editor_options:
 ```{r include = FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
+
+#### Data wrangling in preparing Figure 1
 
 ```{r, message=FALSE}
 library(tidyverse)
@@ -118,6 +115,7 @@ nayfach_s4_s1s2bin <- full_join(nayfach_s4, nayfach_s1s2_bin, by = c("IMG_TAXON_
   mutate (fraction_mapped_NCBI = (`Mapped to NCBI RefSeq` /  `High quality reads sampled (up to 500K)`))
 ```
 
+#### Figure 1 - Percent of soil and human metagenomic reads mapped to the GEM and NCBI RefSeq databases as a function of nonpareil kmer diversity. 
 
 ```{r, fig.height=4, fig.width=5}
 # Figure 1 in Perpective
