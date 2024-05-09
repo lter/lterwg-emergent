@@ -1,0 +1,143 @@
+---
+title: "Insights into soil MAGS in the Nayfach et al GEM catalog"
+author: "Jeffrey Blanchard"
+output:
+  html_document:
+    highlight: tango
+    theme: united
+    toc: yes
+    toc_depth: 3
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+editor_options: 
+  chunk_output_type: console
+---
+
+-   This graph is derived from the data in the supplemental tables (41587_2020_718_MOESM3_ESM.xlsx) in Nayfach et al. 2020 <https://www.nature.com/articles/s41587-020-0718-6>
+
+
+```{r include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+```{r, message=FALSE}
+library(tidyverse)
+library(DT)
+library(knitr)
+```
+
+```{r}
+# Read in Nayfach Table S1
+nayfach_s1 <- read_csv("Nayfach_S1.csv",
+col_types = 
+cols(
+  .default = col_character(),
+  IMG_TAXON_ID = col_double(),
+  ASSEMBLY_LENGTH = col_double(),
+  GENE_COUNT = col_double(),
+  PUBMED_ID = col_character(),
+  LATITUDE = col_double(),
+  LONGITUDE = col_double(),
+  PH_RANGE_START = col_double(),
+  PH_RANGE_END = col_double(),
+  SALINITY = col_character(),
+  TEMPERATURE = col_double(),
+  DEPTH_RANGE_START = col_double(),
+  DEPTH_RANGE_END = col_double(),
+  SUBSURFACE_DEPTH = col_character(),
+  ELEVATION = col_double()
+))
+```
+
+```{r}
+# Rename forest soil specific ecosystem
+nayfach_s1$SPECIFIC_ECOSYSTEM  <- recode(nayfach_s1$SPECIFIC_ECOSYSTEM, "Forest soil" = "Forest Soil")
+```
+
+```{r}
+# Read in Nayfach Table S2
+nayfach_s2 <- read_csv("Nayfach_S2.csv",
+col_types = 
+  cols(
+  genome_id = col_character(),
+  img_taxon_id = col_double(),
+  num_contigs = col_double(),
+  genome_length = col_double(),
+  n50 = col_double(),
+  completeness = col_double(),
+  contamination = col_double(),
+  quality_score = col_double(),
+  num_5s = col_double(),
+  num_16s = col_double(),
+  num_23s = col_double(),
+  num_trnas = col_double(),
+  quality_tier = col_character(),
+  species_id = col_character()
+))
+```
+
+```{r}
+# S1 column names are all uppercase while S2 they are lowercase
+nayfach_s2 <- nayfach_s2 %>% 
+      rename(IMG_TAXON_ID = "img_taxon_id") %>% 
+      rename(otu_id = "species_id") 
+
+# Join Nayfach tables S1 and S2
+nayfach_s1s2 <- full_join(nayfach_s2, nayfach_s1, by = c("IMG_TAXON_ID"))
+```
+
+
+```{r}
+# make dataframe with new column with genome bin counts dealing with the NA
+nayfach_s1s2_binNA <- nayfach_s1s2 %>% 
+  filter(is.na(genome_id)) %>% 
+   group_by(IMG_TAXON_ID, BIOSAMPLE_NAME, STUDY_ID, ECOSYSTEM_CATEGORY, ECOSYSTEM_TYPE, ECOSYSTEM_SUBTYPE, SPECIFIC_ECOSYSTEM, LTER_SITE, HABITAT, ASSEMBLY_LENGTH, GENE_COUNT) %>% 
+  summarise(genome_bins = 0)
+
+nayfach_s1s2_bin_rest <- nayfach_s1s2 %>% 
+  filter(genome_id != "NA") %>% 
+   group_by(IMG_TAXON_ID, BIOSAMPLE_NAME, STUDY_ID, ECOSYSTEM_CATEGORY, ECOSYSTEM_TYPE, ECOSYSTEM_SUBTYPE, SPECIFIC_ECOSYSTEM, LTER_SITE, HABITAT, ASSEMBLY_LENGTH, GENE_COUNT) %>% 
+  summarise(genome_bins = n())
+
+nayfach_s1s2_bin <- bind_rows(nayfach_s1s2_binNA, nayfach_s1s2_bin_rest)
+```
+
+```{r}
+# Read in Nayfach Table S4
+nayfach_s4 <- read_csv("Nayfach_S4.csv") %>% 
+  rename(IMG_TAXON_ID = "IMG Taxon id")
+```
+
+
+```{r}
+# Join Nayfach Tables 1, 2 and 4
+nayfach_s4_s1s2bin <- full_join(nayfach_s4, nayfach_s1s2_bin, by = c("IMG_TAXON_ID")) %>% 
+  mutate (fraction_mapped_either = (`Mapped to either` /  `High quality reads sampled (up to 500K)`)) %>% 
+  mutate (fraction_mapped_GEM = (`Mapped to GEM catalogue` /  `High quality reads sampled (up to 500K)`)) %>% 
+  mutate (fraction_mapped_NCBI = (`Mapped to NCBI RefSeq` /  `High quality reads sampled (up to 500K)`))
+```
+
+
+```{r, fig.height=4, fig.width=5}
+# Figure 1 in Perpective
+nayfach_s4_s1s2bin %>% 
+    filter(`GOLD biome2` == c("Soil","Human")) %>% 
+# filter out unclassified, agricultural, contaminated and permafrost
+    filter(SPECIFIC_ECOSYSTEM != "Unclassified") %>% 
+    filter(SPECIFIC_ECOSYSTEM != "Acidic") %>% 
+    filter(SPECIFIC_ECOSYSTEM != "Agricultural land") %>% 
+    filter(SPECIFIC_ECOSYSTEM != "Oil-contaminated") %>% 
+    filter(SPECIFIC_ECOSYSTEM != "Uranium contaminated") %>% 
+    filter(SPECIFIC_ECOSYSTEM != "Permafrost") %>% 
+    filter(`Nonpareil kmer diversity` > 0) %>% 
+ggplot(aes(x = `fraction_mapped_either`*100, y = `Nonpareil kmer diversity`)) +
+  geom_point(color='black', size = 3, shape=21, aes(fill=factor(`GOLD biome2`))) + 
+  xlab("Percent of reads mapped") +
+  labs(fill = "Metagenome Ecosystem") +
+  theme_bw() +
+  theme(legend.position = c(.6, .8)) +
+  theme(text=element_text(size=15)) +
+  scale_x_continuous(n.breaks=10) 
+```
+
